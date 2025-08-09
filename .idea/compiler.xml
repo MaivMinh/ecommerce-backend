@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="api-gateway" />
+        <module name="config-server" />
+        <module name="product-service" />
+        <module name="common" />
+        <module name="service-discovery" />
+      </profile>
+      <profile name="Annotation profile for bom-service" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <processorPath useClasspath="false">
+          <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
+        </processorPath>
+        <module name="cart-service" />
+        <module name="payment-service" />
+        <module name="review-service" />
+        <module name="promotion-service" />
+        <module name="order-service" />
+        <module name="user-service" />
+        <module name="notification-service" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="backend" target="21" />
+      <module name="common-service" target="21" />
+      <module name="e-commerce" target="21" />
+      <module name="product-server" target="21" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="api-gateway" options="" />
+      <module name="backend" options="-parameters" />
+      <module name="bom-service" options="" />
+      <module name="cart-service" options="" />
+      <module name="common" options="" />
+      <module name="common-service" options="-parameters" />
+      <module name="config-server" options="" />
+      <module name="e-commerce" options="-parameters" />
+      <module name="notification-service" options="" />
+      <module name="order-service" options="" />
+      <module name="payment-service" options="" />
+      <module name="product-server" options="-parameters" />
+      <module name="product-service" options="" />
+      <module name="promotion-service" options="" />
+      <module name="review-service" options="" />
+      <module name="service-discovery" options="" />
+      <module name="user-service" options="" />
+    </option>
+  </component>
+</project>
