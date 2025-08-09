@@ -76,3 +76,7 @@ axon:
   axonserver:
     servers: ${AXON_AXONSERVER_SERVERS:localhost:8124}
     enabled: true
+  eventhandling:
+    processors:
+      product-group:
+        mode: subscribing

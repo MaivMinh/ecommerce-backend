@@ -3,15 +3,14 @@ package com.minh.product_service.query.controller;
 import com.minh.common.response.ResponseData;
 import com.minh.product_service.query.queries.FindAllCategoriesQuery;
 import com.minh.product_service.query.queries.FindCategoryByIdQuery;
+import com.minh.product_service.query.queries.FindCategoryBySlug;
+import com.minh.product_service.query.queries.SearchCategoriesByNameQuery;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -32,6 +31,18 @@ public class CategoryQueryController {
                 .body(response);
     }
 
+    @GetMapping(value = "/slug", produces = "application/json")
+    public ResponseEntity<ResponseData> findCategoryBySlug(@RequestParam(value = "name") String name) {
+        FindCategoryBySlug query = FindCategoryBySlug.builder()
+                .slug(name)
+                .build();
+
+        ResponseData response = queryGateway.query(query, ResponseTypes.instanceOf(ResponseData.class)).join();
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
+    }
+
     @GetMapping(value = "/all")
     public ResponseEntity<ResponseData> findAllCategories() {
         FindAllCategoriesQuery query = FindAllCategoriesQuery.builder()
@@ -41,4 +52,15 @@ public class CategoryQueryController {
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 
+    @GetMapping(value = "/search")
+    public ResponseEntity<ResponseData> searchCategoriesByName(@RequestParam(name = "name") String name) {
+        SearchCategoriesByNameQuery query = SearchCategoriesByNameQuery.builder()
+                .name(name)
+                .build();
+
+        ResponseData response = queryGateway.query(query, ResponseTypes.instanceOf(ResponseData.class)).join();
+        return ResponseEntity
+                .status(response.getStatus())
+                .body(response);
+    }
 }

@@ -21,7 +21,4 @@ public class BaseEntity {
 
     @Column(name = "updated_at", insertable = false)
     private Timestamp updatedAt;
-
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
 }

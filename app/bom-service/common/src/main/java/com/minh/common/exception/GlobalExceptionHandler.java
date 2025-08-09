@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestValueException;
 import org.springframework.web.bind.annotation.*;
 
 import java.nio.file.AccessDeniedException;
@@ -32,7 +33,7 @@ public class GlobalExceptionHandler {
                 .body(new ResponseData(ex.getMessage()));
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ExceptionHandler({MethodArgumentNotValidException.class})
     @ResponseBody
     @ResponseStatus(BAD_REQUEST)
     public ResponseEntity<ResponseData> handleValidationExceptions(MethodArgumentNotValidException ex) {
@@ -45,24 +46,23 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(BAD_REQUEST).body(new ResponseData(BAD_REQUEST.value(), messageCommon.getMessage(ErrorCode.INVALID_PARAMS), errors));
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
+    @ExceptionHandler({IllegalArgumentException.class})
     @ResponseBody
-    public ResponseEntity<ResponseData> handleResourceNotFound(ResourceNotFoundException ex) {
+    @ResponseStatus(BAD_REQUEST)
+    public ResponseEntity<ResponseData> handleIllegalArgumentException(IllegalArgumentException ex) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity
-                .status(HttpStatus.NOT_FOUND)
-                .body(new ResponseData(ex.getMessage()));
+                .status(BAD_REQUEST)
+                .body(new ResponseData(BAD_REQUEST.value(), messageCommon.getMessage(ErrorCode.INVALID_PARAMS), ex));
     }
 
-    @ExceptionHandler(BusinessException.class)
-    @ResponseBody
-    public ResponseEntity<ResponseData> handleBusinessException(BusinessException ex) {
+    @ExceptionHandler(MissingRequestValueException.class)
+    public ResponseEntity<ResponseData> handleMissingRequestValueException(MissingRequestValueException ex) {
         log.error(ex.getMessage(), ex);
         return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ResponseData(ex.getMessage()));
+                .status(BAD_REQUEST)
+                .body(new ResponseData(HttpStatus.BAD_REQUEST.value(), messageCommon.getMessage(ErrorCode.INVALID_PARAMS), ex));
     }
-
 
     @ExceptionHandler({Exception.class, RuntimeException.class, AxonException.class})
     @ResponseBody
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ResponseData(
-                        messageCommon.getMessage(ErrorCode.INTERNAL_SERVER_ERROR))
+                        ex.getMessage())
                 );
     }
 

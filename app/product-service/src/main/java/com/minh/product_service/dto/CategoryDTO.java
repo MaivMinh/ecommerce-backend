@@ -15,4 +15,5 @@ public class CategoryDTO {
     private String slug;
     @NotBlank
     private String image;
+    private Boolean isDeleted;
 }

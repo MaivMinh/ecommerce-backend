@@ -9,10 +9,9 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "Categories")
+@Table(name = "categories")
 public class Category extends BaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private String id;
 
     private String parentId;
@@ -24,4 +23,7 @@ public class Category extends BaseEntity {
     private String slug;
 
     private String image;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted;
 }

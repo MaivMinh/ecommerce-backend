@@ -6,5 +6,6 @@ public class ErrorCode {
 
     public static class Category {
         public static final String NOT_FOUND = "category.not.found";
+        public static final String SLUG_NOT_FOUND = "category.slug.not.found";
     }
 }

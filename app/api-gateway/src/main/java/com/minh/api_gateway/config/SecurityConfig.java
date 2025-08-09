@@ -23,7 +23,7 @@ public class SecurityConfig {
                     exchange
                             .pathMatchers(this.getOpenAPIDoc()).permitAll()
                             .pathMatchers(HttpMethod.GET).permitAll()
-                            .anyExchange().authenticated();
+                            .anyExchange().permitAll();
                 });
         http.csrf(ServerHttpSecurity.CsrfSpec::disable);
         return http.build();

@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class CategoryUpdatedEvent {
+    private String id;
     private String parentId;
     private String name;
     private String description;
