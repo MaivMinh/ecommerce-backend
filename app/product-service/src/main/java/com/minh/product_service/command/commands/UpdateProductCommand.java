@@ -11,9 +11,9 @@ import java.util.List;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @Builder
-public class CreateProductCommand {
+@AllArgsConstructor
+public class UpdateProductCommand {
     @TargetAggregateIdentifier
     private String id;
     private String name;

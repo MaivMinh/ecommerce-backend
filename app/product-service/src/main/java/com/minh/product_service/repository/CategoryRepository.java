@@ -15,8 +15,9 @@ public interface CategoryRepository extends JpaRepository<Category, String> {
      * @param slug the slug of the category
      * @return the category with the specified slug, or null if not found
      */
-    @Query(value = "SELECT c FROM Category c WHERE c.slug = ?1 and c.isDeleted = false")
+    @Query(value = "SELECT c FROM Category c WHERE c.slug = ?1")
     Category findBySlug(String slug);
 
-    List<Category> findByNameContainingIgnoreCaseAndIsDeleted(String name, Boolean isDeleted);
+    List<Category> findByNameContainingIgnoreCase(String name);
+
 }

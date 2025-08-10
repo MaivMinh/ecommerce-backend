@@ -3,12 +3,11 @@ package com.minh.api_gateway.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
+import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.reactive.CorsWebFilter;
-import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,16 +15,23 @@ import java.util.List;
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+
     @Bean
-    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) throws Exception {
+    public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
-                .authorizeExchange(exchange -> {
-                    exchange
-                            .pathMatchers(this.getOpenAPIDoc()).permitAll()
-                            .pathMatchers(HttpMethod.GET).permitAll()
-                            .anyExchange().permitAll();
-                });
-        http.csrf(ServerHttpSecurity.CsrfSpec::disable);
+                .authorizeExchange(exchange -> exchange
+                        .pathMatchers(getOpenAPIDoc()).permitAll()
+                        .pathMatchers(HttpMethod.GET).permitAll()
+                        .pathMatchers(HttpMethod.POST).hasRole("USER") // USER -> ROLE_USER
+                        .anyExchange().authenticated()
+                )
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt.jwtAuthenticationConverter(
+                                new ReactiveJwtAuthenticationConverterAdapter(new KeycloakRoleConverter())
+                        ))
+                )
+                .csrf(ServerHttpSecurity.CsrfSpec::disable);
+
         return http.build();
     }
 

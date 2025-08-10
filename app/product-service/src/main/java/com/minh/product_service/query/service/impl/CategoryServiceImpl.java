@@ -90,7 +90,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public ResponseData searchCategoriesByName(SearchCategoriesByNameQuery query) {
-        List<Category> categories = categoryRepository.findByNameContainingIgnoreCaseAndIsDeleted(query.getName(), false);
+        List<Category> categories = categoryRepository.findByNameContainingIgnoreCase(query.getName());
         List<CategoryDTO> categoryDTOs = categories.stream()
                 .map(category -> modelMapper.map(category, CategoryDTO.class))
                 .collect(Collectors.toList());
@@ -105,7 +105,6 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void createCategory(CategoryCreatedEvent event) {
         Category category = modelMapper.map(event, Category.class);
-        category.setIsDeleted(false);
         categoryRepository.save(category);
     }
 
@@ -125,7 +124,6 @@ public class CategoryServiceImpl implements CategoryService {
         Category category = categoryRepository.findById(event.getId()).orElseThrow(
                 () -> new RuntimeException(messageCommon.getMessage(ErrorCode.Category.NOT_FOUND, event.getId()))
         );
-        category.setIsDeleted(true);
-        categoryRepository.save(category);
+        categoryRepository.delete(category);
     }
 }

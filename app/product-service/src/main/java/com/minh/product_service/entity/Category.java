@@ -23,7 +23,4 @@ public class Category extends BaseEntity {
     private String slug;
 
     private String image;
-
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
 }

@@ -8,7 +8,9 @@ import com.minh.product_service.dto.CategoryDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
+import org.springframework.context.ApplicationContext;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,7 +57,7 @@ public class CategoryCommandController {
 
 
     @DeleteMapping(value = "/{categoryId}")
-    public ResponseEntity<ResponseData> deleteCategory(@PathVariable String categoryId) {
+    public ResponseEntity<ResponseData> deleteCategory(@PathVariable(name = "categoryId") String categoryId) {
         DeleteCategoryCommand command = DeleteCategoryCommand.builder()
                 .id(categoryId)
                 .build();

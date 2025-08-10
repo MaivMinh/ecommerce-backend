@@ -1,12 +1,28 @@
 package com.minh.product_service.command.events;
 
-import lombok.Data;
+import com.minh.product_service.dto.ProductVariantDTO;
+import lombok.*;
 
-@Data
+import java.util.List;
+
+@Getter
+@Setter
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class ProductCreatedEvent {
-    private String parentId;
+    private String id;
     private String name;
-    private String description;
     private String slug;
-    private String image;
+    private String description;
+    private String cover;
+    private List<String> images;
+    private Double price;
+    private Double originalPrice;
+    private List<ProductVariantDTO> productVariants;
+    private String status;
+    private Boolean isFeatured;
+    private Boolean isNew;
+    private Boolean isBestseller;
+    private String categoryId;
 }

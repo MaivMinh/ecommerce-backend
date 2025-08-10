@@ -120,6 +120,12 @@ spring:
         connect-timeout: 10000
         response-timeout: 20s
 
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI:http://localhost:7080/realms/master/protocol/openid-connect/certs}
+
 management:
   # C?u h�nh d�nh cho ph?n metrics c?a Spring Boot Actuator. T�m hi?u sau.
   metrics:

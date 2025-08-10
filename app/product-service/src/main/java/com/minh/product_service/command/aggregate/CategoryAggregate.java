@@ -28,7 +28,6 @@ public class CategoryAggregate {
     private String description;
     private String slug;
     private String image;
-    private Boolean isDeleted;
 
     public CategoryAggregate() {
         ///  default constructor required by Axon Framework.
@@ -51,7 +50,6 @@ public class CategoryAggregate {
         this.description = event.getDescription();
         this.slug = event.getSlug();
         this.image = event.getImage();
-        this.isDeleted = false;  // Initialize isDeleted field to false on creation
     }
 
     @CommandHandler
@@ -82,6 +80,5 @@ public class CategoryAggregate {
     @EventSourcingHandler
     public void on(CategoryDeletedEvent event) {
         log.info("Handling CategoryDeletedEvent: {}", event);
-        this.isDeleted = true;
     }
 }
