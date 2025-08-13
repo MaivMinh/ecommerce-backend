@@ -2,7 +2,6 @@ package com.minh.common.response;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.type.DateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,27 +18,27 @@ public class ResponseData {
     private Integer status;
     private String message;
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    private Object payload;
+    private Object data;
     private String timestamp;
 
     public ResponseData(String message) {
         this.status = 200;
         this.message = message;
-        this.payload = null;
+        this.data = null;
         this.timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(java.time.LocalDateTime.now());
     }
 
     public ResponseData(Object payload) {
         this.status = 200;
         this.message = "Success";
-        this.payload = payload;
+        this.data = payload;
         this.timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(java.time.LocalDateTime.now());
     }
 
     public ResponseData(Integer status, String message, Object payload) {
         this.status = status;
         this.message = message;
-        this.payload = payload;
+        this.data = payload;
         this.timestamp = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(java.time.LocalDateTime.now());
     }
 }

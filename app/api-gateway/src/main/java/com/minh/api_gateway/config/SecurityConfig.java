@@ -8,6 +8,9 @@ import org.springframework.security.config.annotation.web.reactive.EnableWebFlux
 import org.springframework.security.config.web.server.ServerHttpSecurity;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverterAdapter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.reactive.CorsWebFilter;
+import org.springframework.web.cors.reactive.UrlBasedCorsConfigurationSource;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,8 +25,7 @@ public class SecurityConfig {
                 .authorizeExchange(exchange -> exchange
                         .pathMatchers(getOpenAPIDoc()).permitAll()
                         .pathMatchers(HttpMethod.GET).permitAll()
-                        .pathMatchers(HttpMethod.POST).hasRole("USER") // USER -> ROLE_USER
-                        .anyExchange().authenticated()
+                        .anyExchange().permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
                         .jwt(jwt -> jwt.jwtAuthenticationConverter(
@@ -49,5 +51,21 @@ public class SecurityConfig {
         lstUrl.add("/api/v1/recruitment/candidate/apply");
         lstUrl.add("/api/v1/recruitment/auth/login");
         return lstUrl.toArray(new String[0]);
+    }
+
+    /// Cors configuration.
+    @Bean
+    public CorsWebFilter corsWebFilter() {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowCredentials(false);
+        config.setAllowedHeaders(List.of("*"));
+        config.setAllowedMethods(List.of("*"));
+        config.setAllowedOrigins(List.of("localhost:5173", "http://localhost:5174"));
+        config.setExposedHeaders(List.of("*"));
+        config.setMaxAge(3600L);
+
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return new CorsWebFilter(source);
     }
 }

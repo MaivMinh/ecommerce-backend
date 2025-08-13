@@ -3,7 +3,7 @@ package com.minh.product_service.query.projection;
 import com.minh.product_service.command.events.CategoryCreatedEvent;
 import com.minh.product_service.command.events.CategoryDeletedEvent;
 import com.minh.product_service.command.events.CategoryUpdatedEvent;
-import com.minh.product_service.query.service.CategoryService;
+import com.minh.product_service.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.config.ProcessingGroup;
 import org.axonframework.eventhandling.EventHandler;

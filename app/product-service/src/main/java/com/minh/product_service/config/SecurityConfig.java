@@ -1,5 +1,6 @@
 package com.minh.product_service.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -14,6 +15,9 @@ import java.util.List;
 
 @Configuration
 public class SecurityConfig {
+    @Value("${API_GATEWAY_DOMAIN:http://localhost:8080}")
+    private String apiGatewayDomain;
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(request -> {
@@ -24,22 +28,6 @@ public class SecurityConfig {
         return http.build();
     }
 
-    public String[] getOpenAPIDoc() {
-        List<String> lstUrl = new ArrayList<>();
-        lstUrl.add("/swagger-ui/**");
-        lstUrl.add("/v3/api-docs/**");
-        lstUrl.add("/swagger-ui/index.html");
-        lstUrl.add("/webjars/**");
-        lstUrl.add("/api/v1/recruitment/position/**");
-        lstUrl.add("/api/v1/recruitment/position-class/**");
-        lstUrl.add("/api/v1/recruitment/position-group/**");
-        lstUrl.add("/api/v1/recruitment/location/**");
-        lstUrl.add("/api/v1/recruitment/job-ad/**");
-        lstUrl.add("/api/v1/recruitment/candidate/apply");
-        lstUrl.add("/api/v1/recruitment/auth/login");
-        return lstUrl.toArray(new String[0]);
-    }
-
     @Bean
     public WebMvcConfigurer corsConfigurer() {
         return new WebMvcConfigurer() {
@@ -47,7 +35,7 @@ public class SecurityConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry
                         .addMapping("/**")
-                        .allowedOrigins("http://localhost:8080") // only API Gateway.
+                        .allowedOrigins(apiGatewayDomain) // only API Gateway.
                         .allowCredentials(false)
                         .allowedMethods("*")
                         .allowedHeaders("*")

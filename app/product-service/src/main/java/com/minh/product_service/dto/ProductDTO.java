@@ -18,14 +18,11 @@ public class ProductDTO {
     @NotBlank(message = "Name is required")
     @Size(min = 5, message = "The length of the products name should be at least 5")
     private String name;
-    @NotBlank(message = "Slug is required")
     private String slug;
     @NotBlank(message = "Description is required")
     @Size(max = 1000, message = "The length of the products description should be less than 1000")
     private String description;
-    @NotBlank(message = "Cover is required")
     private String cover;
-    @NotBlank(message = "Images are required")
     private List<String> images;
     @NotNull(message = "Price is required")
     private Double price;

@@ -1,24 +1,16 @@
 package com.minh.product_service.query.handler;
 
-import com.minh.common.constants.ErrorCode;
-import com.minh.common.constants.ResponseMessages;
 import com.minh.common.exception.ResourceNotFoundException;
 import com.minh.common.message.MessageCommon;
 import com.minh.common.response.ResponseData;
-import com.minh.product_service.dto.CategoryDTO;
-import com.minh.product_service.entity.Category;
 import com.minh.product_service.query.queries.FindAllCategoriesQuery;
 import com.minh.product_service.query.queries.FindCategoryByIdQuery;
 import com.minh.product_service.query.queries.FindCategoryBySlug;
 import com.minh.product_service.query.queries.SearchCategoriesByNameQuery;
-import com.minh.product_service.query.service.CategoryService;
+import com.minh.product_service.service.CategoryService;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.queryhandling.QueryHandler;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
-
-import java.util.List;
 
 @RequiredArgsConstructor
 @Component

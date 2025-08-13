@@ -6,7 +6,6 @@ import com.minh.product_service.command.commands.DeleteProductCommand;
 import com.minh.product_service.command.commands.UpdateProductCommand;
 import com.minh.product_service.dto.ProductDTO;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.PUT;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +21,6 @@ import java.util.concurrent.TimeUnit;
 @RestController
 public class ProductCommandController {
     private final CommandGateway commandGateway;
-
 
     @PostMapping(value = "")
     public ResponseEntity<ResponseData> createProduct(@RequestBody @Valid ProductDTO dto) {
@@ -78,6 +76,5 @@ public class ProductCommandController {
 
         commandGateway.sendAndWait(command, 20000, TimeUnit.MILLISECONDS);
         return ResponseEntity.ok(null);
-
     }
 }

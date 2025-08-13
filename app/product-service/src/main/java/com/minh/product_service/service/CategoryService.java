@@ -1,16 +1,13 @@
-package com.minh.product_service.query.service;
+package com.minh.product_service.service;
 
 import com.minh.common.exception.ResourceNotFoundException;
 import com.minh.common.response.ResponseData;
 import com.minh.product_service.command.events.CategoryCreatedEvent;
 import com.minh.product_service.command.events.CategoryDeletedEvent;
 import com.minh.product_service.command.events.CategoryUpdatedEvent;
-import com.minh.product_service.dto.CategoryDTO;
 import com.minh.product_service.query.queries.FindAllCategoriesQuery;
 import com.minh.product_service.query.queries.FindCategoryBySlug;
 import com.minh.product_service.query.queries.SearchCategoriesByNameQuery;
-
-import java.util.List;
 
 public interface CategoryService {
     /**
