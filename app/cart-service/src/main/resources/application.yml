@@ -1,0 +1,106 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: cart-service
+  profiles:
+    active: dev
+  threads:
+    virtual:
+      enabled: true
+  config:
+    import: ${SPRING_CONFIG_IMPORT:optional:configserver:http://localhost:8071/}
+
+  sql:
+    init:
+      schema-locations: classpath:schema.sql
+      mode: ${SPRING_SQL_INIT_MODE:never}
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ecommerce_cart}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:49@Da5J,[KsemDN}
+  messages:
+    basename: i18n/messages
+    encoding: UTF-8
+
+
+
+
+management:
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  health:
+    readinessstate:
+      enabled: true
+    livenessstate:
+      enabled: true
+    circuitbreakers:
+      enabled: true
+    ratelimiters:
+      enabled: true
+  metrics:
+    distribution:
+      percentiles-histogram:
+        resilience4j:
+          circuitbreaker:
+            enabled: true
+        http:
+          server:
+            requests:
+              enabled: true
+
+#Eureka client config.
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka/}
+      preferIpAddress: true
+    register-with-eureka: true
+    fetch-registry: true
+
+
+# gRPC configuration
+grpc:
+  client:
+    productService:
+      address: ${GRPC_SERVER_PRODUCT_SERVICE_ADDRESS:static://localhost:9091}
+      negotiation-type: plaintext
+      enable-keep-alive: true
+      keep-alive-without-calls: true
+  server:
+    port: 9092
+
+
+resilience4j:
+  timelimiter:
+    instances:
+      productService:
+        timeout-duration: 8s
+        cancel-running-future: true
+  circuitbreaker:
+    instances:
+      productService:
+        register-health-indicator: true
+        sliding-window-size: 20
+        minimum-number-of-calls: 20
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 20000
+        permitted-number-of-calls-in-half-open-state: 10
+        sliding-window-type: COUNT_BASED
+
+logging:
+  level:
+    net.devh.boot.grpc.server: DEBUG

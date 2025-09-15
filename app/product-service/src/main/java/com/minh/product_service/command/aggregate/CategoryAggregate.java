@@ -48,7 +48,6 @@ public class CategoryAggregate {
         this.parentId = event.getParentId();
         this.name = event.getName();
         this.description = event.getDescription();
-        this.slug = event.getSlug();
         this.image = event.getImage();
     }
 
@@ -65,8 +64,8 @@ public class CategoryAggregate {
         this.parentId = event.getParentId();
         this.name = event.getName();
         this.description = event.getDescription();
-        this.slug = event.getSlug();
         this.image = event.getImage();
+        this.slug = event.getSlug();
     }
 
     @CommandHandler

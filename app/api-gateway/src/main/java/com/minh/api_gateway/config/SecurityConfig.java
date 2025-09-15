@@ -1,5 +1,6 @@
 package com.minh.api_gateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -18,17 +19,22 @@ import java.util.List;
 @Configuration
 @EnableWebFluxSecurity
 public class SecurityConfig {
+    @Value("${CLIENT_DOMAIN:http://localhost:5173}")
+    private String clientDomain;
+
+    @Value("${ADMIN_DOMAIN:http://localhost:5174}")
+    private String adminDomain;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
                 .authorizeExchange(exchange -> exchange
+                        .pathMatchers(HttpMethod.OPTIONS).permitAll()
                         .pathMatchers(getOpenAPIDoc()).permitAll()
-                        .pathMatchers(HttpMethod.GET).permitAll()
-                        .anyExchange().permitAll()
+                        .anyExchange().authenticated()
                 )
-                .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(jwt -> jwt.jwtAuthenticationConverter(
+                .oauth2ResourceServer(resource -> resource  /// resource.jwt() => Format access token dưới dạng JWT.
+                        .jwt(jwtConfigurer -> jwtConfigurer.jwtAuthenticationConverter(
                                 new ReactiveJwtAuthenticationConverterAdapter(new KeycloakRoleConverter())
                         ))
                 )
@@ -60,10 +66,8 @@ public class SecurityConfig {
         config.setAllowCredentials(false);
         config.setAllowedHeaders(List.of("*"));
         config.setAllowedMethods(List.of("*"));
-        config.setAllowedOrigins(List.of("localhost:5173", "http://localhost:5174"));
+        config.setAllowedOrigins(List.of(clientDomain, adminDomain));
         config.setExposedHeaders(List.of("*"));
-        config.setMaxAge(3600L);
-
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
         return new CorsWebFilter(source);

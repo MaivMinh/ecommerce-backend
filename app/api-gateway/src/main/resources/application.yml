@@ -12,17 +12,6 @@ spring:
       enabled: true
   cloud:
     gateway:
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins: "http://localhost:3000,http://localhost:5173"
-            allowedMethods:
-              - GET, POST, PUT, DELETE, PATCH
-            allowCredentials: false
-            allowed-headers:
-              - Authorization, Content-Type, X-Requested-With, Accept, Origin
-            exposed-headers:
-              - Authorization, Content-Type, X-Requested-With, Accept, Origin
       routes:
         - id: api-documentation
           uri: lb://bff
@@ -124,10 +113,9 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI:http://localhost:7080/realms/master/protocol/openid-connect/certs}
+          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI:http://localhost:9090/realms/ecommerce-realm/protocol/openid-connect/certs}
 
 management:
-  # C?u h�nh d�nh cho ph?n metrics c?a Spring Boot Actuator. T�m hi?u sau.
   metrics:
     distribution:
       percentiles-histogram:
@@ -138,7 +126,7 @@ management:
           server:
           requests:
             enabled: true
-  endpoint: # ?ng v?i c�c endpoint n�o th� s? c� c�c y�u c?u, thi?t l?p t??ng ?ng.
+  endpoint:
     health:
       probes:
         enabled: true
@@ -258,3 +246,6 @@ resilience4j:
         automaticTransitionFromOpenToHalfOpenEnabled: true
         waitDurationInOpenState: 10000
         failureRateThreshold: 70
+
+keycloak:
+  client: e-commerce

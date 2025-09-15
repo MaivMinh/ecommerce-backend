@@ -5,8 +5,6 @@ import com.minh.common.message.MessageCommon;
 import com.minh.common.response.ResponseData;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.axonframework.common.AxonException;
-import org.axonframework.queryhandling.QueryExecutionException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -26,7 +24,7 @@ import static org.springframework.http.HttpStatus.BAD_REQUEST;
 public class GlobalExceptionHandler {
     private final MessageCommon messageCommon;
 
-    @ExceptionHandler(AccessDeniedException.class)
+    @ExceptionHandler({AccessDeniedException.class})
     @ResponseBody
     protected ResponseEntity<ResponseData> handleAccessDeniedException(AccessDeniedException ex) {
         log.error(ex.getMessage(), ex);
@@ -65,20 +63,8 @@ public class GlobalExceptionHandler {
                 .body(new ResponseData(HttpStatus.BAD_REQUEST.value(), messageCommon.getMessage(ErrorCode.INVALID_PARAMS), ex));
     }
 
-    @ExceptionHandler({QueryExecutionException.class})
-    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    public ResponseEntity<ResponseData> handleQueryExecutionException(QueryExecutionException ex) {
-        log.error(ex.getMessage(), ex);
-        return ResponseEntity
-                .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ResponseData(
-                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
-                        messageCommon.getMessage(ErrorCode.QUERY_EXECUTION_ERROR),
-                        ex.getMessage())
-                );
-    }
 
-    @ExceptionHandler({Exception.class, RuntimeException.class, AxonException.class})
+    @ExceptionHandler({Exception.class, RuntimeException.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     protected ResponseEntity<ResponseData> handleException(Exception ex) {
         log.error(ex.getMessage(), ex);

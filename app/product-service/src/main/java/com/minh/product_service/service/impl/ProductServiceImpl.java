@@ -5,6 +5,7 @@ import com.minh.common.constants.ResponseMessages;
 import com.minh.common.enums.ProductStatus;
 import com.minh.common.message.MessageCommon;
 import com.minh.common.response.ResponseData;
+import com.minh.grpc.product_service.*;
 import com.minh.product_service.command.events.ProductCreatedEvent;
 import com.minh.product_service.command.events.ProductDeletedEvent;
 import com.minh.product_service.command.events.ProductUpdatedEvent;
@@ -12,9 +13,7 @@ import com.minh.product_service.dto.ProductDTO;
 import com.minh.product_service.dto.ProductImageDTO;
 import com.minh.product_service.dto.ProductVariantDTO;
 import com.minh.product_service.entity.Product;
-import com.minh.product_service.query.queries.FindAllProductsQuery;
-import com.minh.product_service.query.queries.FindProductByIdQuery;
-import com.minh.product_service.query.queries.FindProductBySlugQuery;
+import com.minh.product_service.query.queries.*;
 import com.minh.product_service.repository.ProductRepository;
 import com.minh.product_service.service.ProductImageService;
 import com.minh.product_service.service.ProductService;
@@ -24,9 +23,11 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -35,10 +36,10 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
     private final ProductRepository productRepository;
-    private final ModelMapper modelMapper;
     private final MessageCommon messageCommon;
     private final ProductVariantService productVariantService;
     private final ProductImageService productImageService;
+    private final ModelMapper modelMapper;
 
     private static String generateSlug(String name) {
         if (name == null || name.isEmpty()) {
@@ -61,25 +62,40 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ResponseData findAllProducts(FindAllProductsQuery query) {
+    public ResponseData findProducts(FindProductsQuery query) {
         Pageable pageable = PageRequest.of(query.getPage(), query.getSize());
         Page<Product> page = productRepository.findAll(pageable);
-        List<ProductDTO> productDTOS = page
+        Map<String, ProductDTO> productDTOS = page
                 .stream()
-                .map(product -> modelMapper.map(product, ProductDTO.class))
-                .collect(Collectors.toList());
+                .map(product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    productDTO.setProductVariants(new ArrayList<>());   /// null-check.
+                    productDTO.setImages(new ArrayList<>());
+                    return productDTO;
+                })
+                .collect(Collectors.toMap(ProductDTO::getId, dto -> dto));
 
-        for (ProductDTO productDTO : productDTOS) {
-            /// get product variants.
-            List<ProductVariantDTO> productVariantDTOS = productVariantService.findProductVariantsByProductId(productDTO.getId());
-            productDTO.setProductVariants(new ArrayList<>(productVariantDTOS));
 
-            /// get product images.
-            List<String> imageUrls = productImageService.findProductImagesByProductId(productDTO.getId())
-                    .stream()
-                    .map(ProductImageDTO::getImageUrl)
-                    .collect(Collectors.toList());
-            productDTO.setImages(imageUrls);
+        List<String> productIds = productDTOS.keySet().stream().toList();
+        List<ProductVariantDTO> productVariantDTOS = productVariantService.findProductVariantsByProductIds(productIds);
+
+        /// Fill product variants into each productDTO.
+        for (ProductVariantDTO productVariantDTO : productVariantDTOS) {
+            ProductDTO productDTO = productDTOS.get(productVariantDTO.getProductId());
+            if (!Objects.isNull(productDTO)) {
+                /// Add product variant to the productDTO.
+                productDTO.getProductVariants().add(productVariantDTO);
+            }
+        }
+
+        List<ProductImageDTO> productImageDTOS = productImageService.findProductImagesByProductIds(productIds);
+        /// Fill product images into each productDTO.
+        for (ProductImageDTO productImageDTO : productImageDTOS) {
+            ProductDTO productDTO = productDTOS.get(productImageDTO.getProductId());
+            if (!Objects.isNull(productDTO)) {
+                /// Add product image to the productDTO.
+                productDTO.getImages().add(productImageDTO.getImageUrl());
+            }
         }
 
         Map<String, Object> payload = new HashMap<>();
@@ -87,7 +103,7 @@ public class ProductServiceImpl implements ProductService {
         payload.put("size", page.getSize());
         payload.put("totalElements", page.getTotalElements());
         payload.put("totalPages", page.getTotalPages());
-        payload.put("products", productDTOS);
+        payload.put("products", productDTOS.values().stream().collect(Collectors.toList()));
 
         return ResponseData.builder()
                 .status(HttpStatus.OK.value())
@@ -120,11 +136,18 @@ public class ProductServiceImpl implements ProductService {
         if (product == null) {
             return ResponseData.builder()
                     .status(HttpStatus.NOT_FOUND.value())
-                    .message(messageCommon.getMessage(ErrorCode.Product.NOT_FOUND, query.getSlug()))
+                    .message(messageCommon.getMessage(ErrorCode.Product.SLUG_NOT_FOUND, query.getSlug()))
                     .build();
         }
 
         ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+
+        List<ProductImageDTO> productImageDTOs = productImageService.findProductImagesByProductId(product.getId());
+        List<ProductVariantDTO> productVariantDTOs = productVariantService.findProductVariantsByProductId(product.getId());
+
+        productDTO.setProductVariants(new ArrayList<>(productVariantDTOs));
+        productDTO.setImages(productImageDTOs.stream().map(ProductImageDTO::getImageUrl).collect(Collectors.toList()));
+
         return ResponseData.builder()
                 .status(HttpStatus.OK.value())
                 .message(ResponseMessages.SUCCESS)
@@ -168,18 +191,6 @@ public class ProductServiceImpl implements ProductService {
         modelMapper.map(event, product);
         productRepository.save(product);
 
-        /// Cập nhật các biến thể liên quan đến sản phẩm.
-//        if (!CollectionUtils.isEmpty(event.getProductVariants())) {
-//            event.getProductVariants().forEach(productVariantDTO -> {
-//                productVariantDTO.setProductId(product.getId());
-//                if (productVariantDTO.getId() == null) {
-//                    productVariantService.createProductVariant(productVariantDTO);
-//                } else {
-//                    productVariantService.updateProductVariant(productVariantDTO);
-//                }
-//            });
-//        }
-
         List<ProductVariantDTO> productVariantDTOS = event.getProductVariants();
         Map<String, ProductVariantDTO> variantMap = productVariantDTOS.stream()
                 .collect(Collectors.toMap(ProductVariantDTO::getId, variant -> variant));
@@ -205,12 +216,11 @@ public class ProductServiceImpl implements ProductService {
             }
         }
 
-        /// Cập nhật lại danh sách hình ảnh.
-        if (!CollectionUtils.isEmpty(event.getImages())) {
-            // Xoá tất cả hình ảnh cũ liên quan đến sản phẩm.
-            List<ProductImageDTO> existingImages = productImageService.findProductImagesByProductId(product.getId());
-            existingImages.forEach(image -> productImageService.deleteProductImage(image.getId()));
+        // Xoá tất cả hình ảnh cũ liên quan đến sản phẩm.
+        List<ProductImageDTO> existingImages = productImageService.findProductImagesByProductId(product.getId());
+        existingImages.forEach(image -> productImageService.deleteProductImage(image.getId()));
 
+        if (!CollectionUtils.isEmpty(event.getImages())) {
             // Lưu lại các hình ảnh mới.
             event.getImages().forEach(image -> {
                 ProductImageDTO productImageDTO = new ProductImageDTO();
@@ -229,5 +239,167 @@ public class ProductServiceImpl implements ProductService {
             throw new RuntimeException(messageCommon.getMessage(ErrorCode.Product.NOT_FOUND, event.getId()));
         }
         productRepository.delete(product);
+    }
+
+    @Override
+    public ResponseData searchProducts(SearchProductQuery query) {
+        Pageable pageable = null;
+        if (StringUtils.hasText(query.getSort())) {
+            List<Sort.Order> orders = new ArrayList<>();
+            String[] sortParams = query.getSort().split(",");
+            for (String sortParam : sortParams) {
+                orders.add(new Sort.Order(Sort.Direction.fromString(sortParam.split(":")[1].toUpperCase()), sortParam.split(":")[0]));
+            }
+            pageable = PageRequest.of(query.getPage(), query.getSize(), Sort.by(orders));
+        } else pageable = PageRequest.of(query.getPage(), query.getSize());
+        Page<Product> products = productRepository.searchProducts(query, pageable);
+
+        List<String> productIds = products.stream()
+                .map(Product::getId)
+                .toList();
+        List<ProductVariantDTO> productVariants = productVariantService.findProductVariantsByProductIds(productIds);
+        List<ProductImageDTO> productImages = productImageService.findProductImagesByProductIds(productIds);
+        Map<String, ProductDTO> productDTOS = products.stream()
+                .map(product -> {
+                    ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                    productDTO.setProductVariants(new ArrayList<>());
+                    productDTO.setImages(new ArrayList<>());
+                    return productDTO;
+                })
+                .collect(Collectors.toMap(ProductDTO::getId, dto -> dto));
+
+        for (ProductVariantDTO dto : productVariants) {
+            ProductDTO productDTO = productDTOS.get(dto.getProductId());
+            if (productDTO != null) {
+                productDTO.getProductVariants().add(dto);
+            }
+        }
+        for (ProductImageDTO dto : productImages) {
+            ProductDTO productDTO = productDTOS.get(dto.getProductId());
+            if (productDTO != null) {
+                productDTO.getImages().add(dto.getImageUrl());
+            }
+        }
+        List<ProductDTO> result = new ArrayList<>(productDTOS.values());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("products", result);
+        data.put("page", products.getNumber() + 1);
+        data.put("size", products.getSize());
+        data.put("totalElements", products.getTotalElements());
+        data.put("totalPages", products.getTotalPages());
+
+        return ResponseData.builder()
+                .status(HttpStatus.OK.value())
+                .message(ResponseMessages.SUCCESS)
+                .data(data)
+                .build();
+    }
+
+    @Override
+    public ResponseData findProductVariantsByProductId(FindProductVariantsByProductIdQuery query) {
+        Product product = productRepository.findById(query.getProductId()).orElse(null);
+        if (product == null) {
+            return ResponseData.builder()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .message(messageCommon.getMessage(ErrorCode.Product.SLUG_NOT_FOUND, query.getProductId()))
+                    .build();
+        }
+
+        List<ProductVariantDTO> productVariants = productVariantService.findProductVariantsByProductId(product.getId());
+        List<ProductVariantDTO> data = productVariants.stream()
+                .map(variant -> {
+                    ProductVariantDTO variantDTO = modelMapper.map(variant, ProductVariantDTO.class);
+                    variantDTO.setProductId(product.getId());
+                    return variantDTO;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseData.builder()
+                .status(HttpStatus.OK.value())
+                .message(ResponseMessages.SUCCESS)
+                .data(data)
+                .build();
+    }
+
+    @Override
+    public ResponseData findNewestProducts(FindNewestProductsQuery query) {
+        Pageable pageable = PageRequest.of(query.getPage(), query.getSize());
+        List<Product> products = productRepository.findNewestProducts(pageable);
+        return ResponseData.builder()
+                .status(HttpStatus.OK.value())
+                .message(ResponseMessages.SUCCESS)
+                .data(products.stream()
+                        .map(product -> {
+                            ProductDTO productDTO = modelMapper.map(product, ProductDTO.class);
+                            productDTO.setProductVariants(new ArrayList<>());
+                            productDTO.setImages(new ArrayList<>());
+                            return productDTO;
+                        })
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    @Override
+    public FindProductVariantByIdResponse findProductVariantById(FindProductVariantByIdRequest request) {
+        return null;
+    }
+
+    /**
+     * Tìm nhiều biến thể sản phẩm theo danh sách ID.
+     *
+     * @param request
+     * @return FindProductVariantsByIdsResponse
+     */
+    @Override
+    public FindProductVariantsByIdsResponse findProductVariantsByIds(FindProductVariantsByIdsRequest request) {
+        if (CollectionUtils.isEmpty(request.getCartItemFieldList())) {
+            return FindProductVariantsByIdsResponse.newBuilder()
+                    .setStatus(HttpStatus.BAD_REQUEST.value())
+                    .setMessage("Không tìm thấy danh sách ID.")
+                    .build();
+        }
+
+        List<CartItemField> cartItemFields = request.getCartItemFieldList().stream().toList();
+        Map<String, Object> map = new HashMap<>();
+        List<String> productVariantIds = new ArrayList<>();
+        for (CartItemField cartItemField : cartItemFields) {
+            map.put(cartItemField.getProductVariantId(), cartItemField);
+            productVariantIds.add(cartItemField.getProductVariantId());
+        }
+        List<ProductVariant> productVariants = new ArrayList<>();
+        List<ProductVariantDTO> productVariantDTOS = productVariantService.findProductVariantsByIds(productVariantIds);
+        if (CollectionUtils.isEmpty(productVariantDTOS)) {
+            return FindProductVariantsByIdsResponse.newBuilder()
+                    .setStatus(HttpStatus.NOT_FOUND.value())
+                    .setMessage("Không tìm thấy biến thể sản phẩm nào.")
+                    .build();
+        }
+        Product product = productRepository.findById(productVariantDTOS.get(0).getProductId()).orElse(null);
+        if (!CollectionUtils.isEmpty(productVariantDTOS)) {
+            productVariantDTOS.forEach(productVariant -> {
+                CartItemField cartItemField = (CartItemField) map.get(productVariant.getId());
+                ProductVariant.Builder builder = ProductVariant.newBuilder();
+                builder.setCartItemId(cartItemField.getCartItemId());
+                builder.setId(productVariant.getId());
+                builder.setSize(productVariant.getSize());
+                builder.setOriginalPrice(productVariant.getOriginalPrice());
+                builder.setPrice(productVariant.getPrice());
+                builder.setColorName(productVariant.getColorName());
+                builder.setColorHex(productVariant.getColorHex());
+                builder.setCover(product.getCover());
+                builder.setSlug(product.getSlug());
+                builder.setName(product.getName());
+
+                ProductVariant variant = builder.build();
+                productVariants.add(variant);
+            });
+        }
+
+        return FindProductVariantsByIdsResponse.newBuilder()
+                .setStatus(HttpStatus.OK.value())
+                .setMessage(ResponseMessages.SUCCESS)
+                .addAllProductVariant(productVariants)
+                .build();
     }
 }

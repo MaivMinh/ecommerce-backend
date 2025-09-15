@@ -7,7 +7,9 @@ import com.minh.product_service.service.ProductVariantService;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
@@ -16,8 +18,8 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class ProductVariantServiceImpl implements ProductVariantService {
-    private final ModelMapper modelMapper;
     private final ProductVariantRepository productVariantRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public void createProductVariant(ProductVariantDTO productVariantDTO) {
@@ -51,5 +53,33 @@ public class ProductVariantServiceImpl implements ProductVariantService {
     @Override
     public void deleteProductVariant(String id) {
         productVariantRepository.deleteById(id);
+    }
+
+    @Override
+    public List<ProductVariantDTO> findProductVariantsByProductIds(List<String> productIds) {
+        if (CollectionUtils.isEmpty(productIds)) {
+            return new ArrayList<>();
+        }
+
+        return productVariantRepository.findAllByProductIdIn(productIds).stream()
+                .map(variant -> modelMapper.map(variant, ProductVariantDTO.class))
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Hàm thực hiện lấy danh sách các biến thể sản phẩm dựa trên danh sách ID của chúng.
+     * @param productVariantIds
+     * @return List<ProductVariantDTO>
+     */
+    @Override
+    public List<ProductVariantDTO> findProductVariantsByIds(List<String> productVariantIds) {
+        if (CollectionUtils.isEmpty(productVariantIds)) {
+            return new ArrayList<>();
+        }
+
+        List<ProductVariant> productVariants = productVariantRepository.findProductVariantsByIds(productVariantIds);
+        return productVariants.stream()
+                .map(variant -> modelMapper.map(variant, ProductVariantDTO.class))
+                .collect(Collectors.toList());
     }
 }

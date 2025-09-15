@@ -11,12 +11,15 @@ import com.minh.product_service.command.events.CategoryUpdatedEvent;
 import com.minh.product_service.dto.CategoryDTO;
 import com.minh.product_service.entity.Category;
 import com.minh.product_service.query.queries.FindAllCategoriesQuery;
+import com.minh.product_service.query.queries.FindCategoriesQuery;
 import com.minh.product_service.query.queries.FindCategoryBySlug;
 import com.minh.product_service.query.queries.SearchCategoriesByNameQuery;
 import com.minh.product_service.service.CategoryService;
 import com.minh.product_service.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -28,9 +31,28 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
-    private final ModelMapper modelMapper;
     private final MessageCommon messageCommon;
+    private final ModelMapper modelMapper;
 
+    private static String generateSlug(String name) {
+        if (name == null || name.isEmpty()) {
+            return "";
+        }
+        // Convert to lowercase
+        String slug = name.toLowerCase();
+        // Handle Vietnamese accents and other diacritical marks
+        slug = java.text.Normalizer.normalize(slug, java.text.Normalizer.Form.NFD);
+        // Replace spaces with hyphens
+        slug = slug.replaceAll("\\s+", "-");
+        // Remove special characters but keep normalized characters
+        slug = slug.replaceAll("[^\\p{ASCII}]", "");
+        slug = slug.replaceAll("[^a-z0-9-]", "");
+        // Replace multiple hyphens with a single one
+        slug = slug.replaceAll("-+", "-");
+        // Remove leading and trailing hyphens
+        slug = slug.replaceAll("^-|-$", "");
+        return slug;
+    }
 
     @Override
     public ResponseData getCategoryById(String categoryId) {
@@ -103,6 +125,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public void createCategory(CategoryCreatedEvent event) {
         Category category = modelMapper.map(event, Category.class);
+        category.setSlug(generateSlug(event.getName()));
         categoryRepository.save(category);
     }
 
@@ -123,5 +146,19 @@ public class CategoryServiceImpl implements CategoryService {
                 () -> new RuntimeException(messageCommon.getMessage(ErrorCode.Category.NOT_FOUND, event.getId()))
         );
         categoryRepository.delete(category);
+    }
+
+    @Override
+    public ResponseData findCategories(FindCategoriesQuery query) {
+        Pageable pageable = PageRequest.of(query.getPage(), query.getSize());
+        List<Category> categories = categoryRepository.findAll(pageable).getContent();
+        List<CategoryDTO> categoryDTOs = categories.stream()
+                .map(category -> modelMapper.map(category, CategoryDTO.class))
+                .collect(Collectors.toList());
+        return ResponseData.builder()
+                .status(HttpStatus.OK.value())
+                .message(ResponseMessages.SUCCESS)
+                .data(categoryDTOs)
+                .build();
     }
 }

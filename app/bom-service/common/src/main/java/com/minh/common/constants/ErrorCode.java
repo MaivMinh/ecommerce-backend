@@ -14,4 +14,12 @@ public class ErrorCode {
         public static final String NOT_FOUND = "product.not.found";
         public static final String SLUG_NOT_FOUND = "product.slug.not.found";
     }
+
+    public static class Cart {
+        public static final String NOT_FOUND_WITH_USER_ID = "cart.not.found.with.user.id";
+    }
+
+    public static class CartItem {
+        public static final String NOT_FOUND = "cart.item.not.found";
+    }
 }

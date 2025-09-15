@@ -23,7 +23,22 @@ public class ProductQueryHandler {
     }
 
     @QueryHandler
-    public ResponseData handle(FindAllProductsQuery query) {
-        return productService.findAllProducts(query);
+    public ResponseData handle(FindProductsQuery query) {
+        return productService.findProducts(query);
+    }
+
+    @QueryHandler
+    public ResponseData handle(SearchProductQuery query) {
+        return productService.searchProducts(query);
+    }
+
+    @QueryHandler
+    public ResponseData handle(FindProductVariantsByProductIdQuery query) {
+        return productService.findProductVariantsByProductId(query);
+    }
+
+    @QueryHandler
+    public ResponseData handle(FindNewestProductsQuery query) {
+        return productService.findNewestProducts(query);
     }
 }

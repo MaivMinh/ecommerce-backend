@@ -16,8 +16,8 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 public class ProductImageServiceImpl implements ProductImageService {
-    private final ModelMapper modelMapper;
     private final ProductImageRepository productImageRepository;
+    private final ModelMapper modelMapper;
 
     @Override
     public void createProductImage(ProductImageDTO productImageDTO) {
@@ -49,6 +49,23 @@ public class ProductImageServiceImpl implements ProductImageService {
     @Override
     public List<ProductImageDTO> findProductImagesByProductId(String id) {
         List<ProductImage> productImages = productImageRepository.findAllByProductId(id);
+        if (productImages.isEmpty()) {
+            return List.of();
+        }
+        return productImages.stream()
+                .map(image -> modelMapper.map(image, ProductImageDTO.class))
+                .toList();
+    }
+
+    /**
+     * Hàm thực hiện tìm kiếm tất cả ảnh tương ứng với danh sách productId
+     *
+     * @param productIds
+     * @return Danh sách ảnh tương ứng với danh sách productId
+     */
+    @Override
+    public List<ProductImageDTO> findProductImagesByProductIds(List<String> productIds) {
+        List<ProductImage> productImages = productImageRepository.findProductImagesByProductIds(productIds);
         if (productImages.isEmpty()) {
             return List.of();
         }

@@ -1,5 +1,6 @@
 package com.minh.product_service.entity;
 
+import com.minh.common.entity.BaseEntity;
 import com.minh.common.enums.ProductStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -11,7 +12,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "products")
-public class Product {
+public class Product extends BaseEntity {
     @Id
     private String id;
     private String name;

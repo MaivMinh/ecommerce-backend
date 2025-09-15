@@ -13,4 +13,8 @@ public interface ProductVariantService {
     void updateProductVariant(ProductVariantDTO productVariantDTO);
 
     void deleteProductVariant(String id);
+
+    List<ProductVariantDTO> findProductVariantsByProductIds(List<String> productIds);
+
+    List<ProductVariantDTO> findProductVariantsByIds(List<String> productVariantIds);
 }

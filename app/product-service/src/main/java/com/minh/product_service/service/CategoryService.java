@@ -6,6 +6,7 @@ import com.minh.product_service.command.events.CategoryCreatedEvent;
 import com.minh.product_service.command.events.CategoryDeletedEvent;
 import com.minh.product_service.command.events.CategoryUpdatedEvent;
 import com.minh.product_service.query.queries.FindAllCategoriesQuery;
+import com.minh.product_service.query.queries.FindCategoriesQuery;
 import com.minh.product_service.query.queries.FindCategoryBySlug;
 import com.minh.product_service.query.queries.SearchCategoriesByNameQuery;
 
@@ -32,4 +33,6 @@ public interface CategoryService {
     void createCategory(CategoryCreatedEvent event);
     void updateCategory(CategoryUpdatedEvent event);
     void deleteCategory(CategoryDeletedEvent event);
+
+    ResponseData findCategories(FindCategoriesQuery query);
 }

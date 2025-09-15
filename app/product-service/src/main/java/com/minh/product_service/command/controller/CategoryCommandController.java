@@ -31,7 +31,6 @@ public class CategoryCommandController {
                 .parentId(categoryDTO.getParentId())
                 .name(categoryDTO.getName())
                 .description(categoryDTO.getDescription())
-                .slug(categoryDTO.getSlug())
                 .image(categoryDTO.getImage())
                 .build();
 
@@ -47,8 +46,8 @@ public class CategoryCommandController {
                 .parentId(categoryDTO.getParentId())
                 .name(categoryDTO.getName())
                 .description(categoryDTO.getDescription())
-                .slug(categoryDTO.getSlug())
                 .image(categoryDTO.getImage())
+                .slug(categoryDTO.getSlug())
                 .build();
 
         commandGateway.sendAndWait(command, 20000, TimeUnit.MILLISECONDS);

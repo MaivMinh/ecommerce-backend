@@ -1,7 +1,6 @@
 package com.minh.product_service.service;
 
 import com.minh.product_service.dto.ProductImageDTO;
-import com.netflix.spectator.api.Registry;
 
 import java.util.List;
 
@@ -13,4 +12,6 @@ public interface ProductImageService {
     void updateProductImage(ProductImageDTO productImageDTO);
 
     List<ProductImageDTO> findProductImagesByProductId(String id);
+
+    List<ProductImageDTO> findProductImagesByProductIds(List<String> productIds);
 }

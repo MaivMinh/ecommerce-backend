@@ -1,5 +1,6 @@
 package com.minh.api_gateway.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,28 +14,14 @@ public class KeycloakRoleConverter implements Converter<Jwt, AbstractAuthenticat
 
     @Override
     public AbstractAuthenticationToken convert(Jwt jwt) {
-        Collection<String> roles = extractResourceRoles(jwt);
+        Map<String, Object> resourceAccess = (Map<String, Object>) jwt.getClaims().get("resource_access"); // Lấy roles từ realm_access
+        Map<String, Object> clientAccess = (Map<String, Object>) resourceAccess.get("e-commerce");
+        List<String> roles = (List<String>) clientAccess.get("roles");
 
         var authorities = roles.stream()
                 .map(role -> "ROLE_" + role) // Bắt buộc ROLE_ prefix để .hasRole() hoạt động
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
-
-        return new JwtAuthenticationToken(jwt, authorities, getUsername(jwt));
-    }
-
-    private Collection<String> extractResourceRoles(Jwt jwt) {
-        Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-        if (resourceAccess == null) return Collections.emptySet();
-
-        Map<String, Object> client = (Map<String, Object>) resourceAccess.get("e-commerce");
-        if (client == null) return Collections.emptySet();
-
-        Collection<String> roles = (Collection<String>) client.get("roles");
-        return roles != null ? roles : Collections.emptySet();
-    }
-
-    private String getUsername(Jwt jwt) {
-        return jwt.getClaimAsString("preferred_username");
+        return new JwtAuthenticationToken(jwt, authorities);
     }
 }
