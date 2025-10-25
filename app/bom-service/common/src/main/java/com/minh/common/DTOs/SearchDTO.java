@@ -4,8 +4,8 @@ import lombok.Data;
 
 @Data
 public class SearchDTO {
-    private int page = 0;
-    private int size = 10;
-    private String sortBy;
-    private String sortDirection;
+    protected int page = 0;
+    protected int size = 10;
+    protected String sortBy;
+    protected String sortDirection;
 }

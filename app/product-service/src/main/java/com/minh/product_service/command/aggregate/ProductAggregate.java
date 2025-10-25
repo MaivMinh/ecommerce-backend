@@ -98,4 +98,5 @@ public class ProductAggregate {
     @EventSourcingHandler
     public void on(ProductDeletedEvent event) {
     }
+
 }

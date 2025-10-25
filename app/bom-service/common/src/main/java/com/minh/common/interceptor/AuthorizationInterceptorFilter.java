@@ -1,6 +1,7 @@
 package com.minh.common.interceptor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.minh.common.DTOs.AuthenticatedDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -25,10 +26,11 @@ public class AuthorizationInterceptorFilter extends OncePerRequestFilter {
         String token = this.extractToken(request);
         if (token != null) {
             try {
-                //Chuyển token xuống cho auth xử lý.
                 UserDetails userDetails = this.extractUser(token);
+                AuthenticatedDetails details = this.extractDetails(token);
                 if (userDetails != null) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userDetails.getUsername(), null, userDetails.getAuthorities());
+                    authentication.setDetails(details);
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 } else {
                     SecurityContextHolder.clearContext();
@@ -43,6 +45,30 @@ public class AuthorizationInterceptorFilter extends OncePerRequestFilter {
         }
 
         filterChain.doFilter(request, response);
+    }
+
+    private AuthenticatedDetails extractDetails(String token) {
+        // Parse JWT token and extract user information
+        try {
+            String[] parts = token.split("\\.");
+
+            String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]));
+
+            ObjectMapper mapper = new ObjectMapper();
+            Map<String, Object> payload = mapper.readValue(payloadJson, Map.class);
+
+            String givenName = (String) payload.get("given_name");
+            String familyName = (String) payload.get("family_name");
+            String email = (String) payload.get("email");
+
+            AuthenticatedDetails details = new AuthenticatedDetails();
+            details.setGivenName(givenName);
+            details.setFamilyName(familyName);
+            details.setEmail(email);
+            return details;
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private UserDetails extractUser(String token) {
@@ -74,7 +100,6 @@ public class AuthorizationInterceptorFilter extends OncePerRequestFilter {
 
             return new org.springframework.security.core.userdetails.User(
                     username, "", authorities);
-
         } catch (Exception e) {
             logger.error("Error parsing JWT token", e);
             return null;

@@ -1,13 +1,41 @@
 syntax = "proto3";
 
-package net.devh.boot.grpc.example;
+package product;
 option java_multiple_files = true;
-option java_outer_classname = "ProductProto";
-option java_package = "com.minh.grpc.product_service";
+option java_package = "product_service";
 
 service ProductService {
   rpc FindProductVariantById(FindProductVariantByIdRequest) returns (FindProductVariantByIdResponse);
   rpc FindProductVariantsByIds(FindProductVariantsByIdsRequest) returns (FindProductVariantsByIdsResponse);
+
+  rpc FindProductVariantByListId(FindProductVariantByListProductVariantIdRequest) returns (FindProductVariantByListProductVariantIdResponse);
+}
+
+
+message OrderItemAndProductVariantId {
+  string orderItemId = 1;
+  string productVariantId = 2;
+}
+message FindProductVariantByListProductVariantIdRequest {
+  repeated OrderItemAndProductVariantId ids = 1;
+}
+message FindProductVariantByListProductVariantIdResponse {
+  int32 status = 1;
+  string message = 2;
+  repeated ProductVariantRes productVariants = 3;
+}
+
+message ProductVariantRes {
+  string id = 1;
+  string name = 2;
+  string slug = 3;
+  string size = 4;
+  string colorName = 5;
+  string colorHex = 6;
+  string cover = 7;
+  double price = 8;
+  double originalPrice = 9;
+  string orderItemId = 10;
 }
 
 message ProductVariant {
@@ -43,3 +71,5 @@ message FindProductVariantsByIdsResponse {
   string message = 2;
   repeated ProductVariant productVariant = 3;
 }
+
+

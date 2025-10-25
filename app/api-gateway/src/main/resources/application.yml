@@ -30,8 +30,8 @@ spring:
                 name: productService
                 fallbackUri: "forward:/products/contact-support"
 
-        - id: cart-service
-          uri: lb://cart-service
+        - id: side-service
+          uri: lb://side-service
           predicates:
             - Path=/api/carts/**,/api/carts
             - Method=GET,POST,PUT,DELETE,PATCH
@@ -73,8 +73,8 @@ spring:
                 name: promotionService
                 fallbackUri: "forward:/promotions/contact-support"
 
-        - id: file-service
-          uri: lb://file-service
+        - id: side-service
+          uri: lb://side-service
           predicates:
             - Path=/api/files/**,/api/files
             - Method=GET,POST,PUT,DELETE,PATCH
@@ -84,19 +84,8 @@ spring:
                 name: fileService
                 fallbackUri: "forward:/files/contact-support"
 
-        - id: user-service
-          uri: lb://user-service
-          predicates:
-            - Path=/api/users/**,/api/users
-            - Method=GET,POST,PUT,DELETE,PATCH
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: userService
-                fallbackUri: "forward:/users/contact-support"
-
-        - id: review-service
-          uri: lb://review-service
+        - id: side-service
+          uri: lb://side-service
           predicates:
             - Path=/api/reviews/**,/api/reviews
             - Method=GET,POST,PUT,DELETE,PATCH
@@ -105,6 +94,17 @@ spring:
               args:
                 name: reviewService
                 fallbackUri: "forward:/reviews/contact-support"
+
+        - id: side-service
+          uri: lb://side-service
+          predicates:
+            - Path=/api/users/**,/api/addresses/**,/api/users,/api/addresses
+            - Method=GET,POST,PUT,DELETE,PATCH
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: addressService
+                fallbackUri: "forward:/address/contact-support"
       httpclient:
         connect-timeout: 10000
         response-timeout: 20s
@@ -113,7 +113,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI:http://localhost:9090/realms/ecommerce-realm/protocol/openid-connect/certs}
+          jwk-set-uri: ${SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWKSETURI:http://localhost:9090/realms/e-commerce/protocol/openid-connect/certs}
 
 management:
   metrics:

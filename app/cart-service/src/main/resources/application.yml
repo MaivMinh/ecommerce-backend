@@ -82,7 +82,9 @@ grpc:
       keep-alive-without-calls: true
   server:
     port: 9092
-
+axon:
+  axonserver:
+    enabled: false
 
 resilience4j:
   timelimiter:

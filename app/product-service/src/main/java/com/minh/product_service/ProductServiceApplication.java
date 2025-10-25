@@ -17,7 +17,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @EnableJpaAuditing(auditorAwareRef = "auditAwareImpl")
 @EnableJpaRepositories(basePackages = "com.minh.product_service.repository")
 @EntityScan(value = "com.minh.product_service.entity")
-@ComponentScan(basePackages = {"com.minh.*"})
+@ComponentScan(basePackages = {"com.minh.product_service.*", "com.minh.common"})
 @EnableMethodSecurity
 public class ProductServiceApplication {
 

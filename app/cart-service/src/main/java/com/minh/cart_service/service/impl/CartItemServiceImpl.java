@@ -1,11 +1,8 @@
 package com.minh.cart_service.service.impl;
 
 import com.minh.cart_service.DTO.CartItemDTO;
-import com.minh.cart_service.DTO.ProductVariantDTO;
 import com.minh.cart_service.entity.Cart;
 import com.minh.cart_service.entity.CartItem;
-import com.minh.cart_service.grpc.ProductServiceGrpcClient;
-import com.minh.cart_service.repository.CartItemProductVariantProjection;
 import com.minh.cart_service.repository.CartItemRepository;
 import com.minh.cart_service.repository.CartRepository;
 import com.minh.cart_service.service.CartItemService;
@@ -14,10 +11,6 @@ import com.minh.common.constants.ResponseMessages;
 import com.minh.common.message.MessageCommon;
 import com.minh.common.response.ResponseData;
 import com.minh.common.utils.AppUtils;
-import com.minh.grpc.product_service.CartItemField;
-import com.minh.grpc.product_service.FindProductVariantsByIdsRequest;
-import com.minh.grpc.product_service.FindProductVariantsByIdsResponse;
-import com.minh.grpc.product_service.ProductVariant;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -32,7 +25,7 @@ public class CartItemServiceImpl implements CartItemService {
     private final CartItemRepository cartItemRepository;
     private final CartRepository cartRepository;
     private final MessageCommon messageCommon;
-    private final ProductServiceGrpcClient productServiceGrpcClient;
+//    private final ProductServiceGrpcClient productServiceGrpcClient;
 
 
     /// Hàm thực hiện tạo một mục trong giỏ hàng của người dùng
@@ -119,87 +112,88 @@ public class CartItemServiceImpl implements CartItemService {
 
     @Override
     public ResponseData findCartItemOfUser() {
-        String username = AppUtils.getUsername();
-
-        try {
-
-            Cart cart = cartRepository.findByUsername(username);
-            if (cart == null) {
-                return ResponseData.builder()
-                        .status(HttpStatus.NOT_FOUND.value())
-                        .message(messageCommon.getMessage(ErrorCode.Cart.NOT_FOUND_WITH_USER_ID, username))
-                        .data(null)
-                        .build();
-            }
-
-            List<CartItemProductVariantProjection> projections = cartItemRepository.findAllProductVariantIdsByCartId(cart.getId());
-
-            FindProductVariantsByIdsRequest request = FindProductVariantsByIdsRequest.newBuilder()
-                    .addAllCartItemField(
-                            projections.stream().map(
-                                            projection -> CartItemField.newBuilder()
-                                                    .setCartItemId(projection.getCartItemId())
-                                                    .setProductVariantId(projection.getProductVariantId())
-                                                    .build())
-                                    .toList()
-                    ).build();
-
-            FindProductVariantsByIdsResponse response = productServiceGrpcClient.findProductVariantsByIds(request);
-            if (response.getStatus() != HttpStatus.OK.value() || response.getProductVariantList().isEmpty()) {
-                return ResponseData.builder()
-                        .status(response.getStatus())
-                        .message(response.getMessage())
-                        .data(null)
-                        .build();
-            }
-
-            Map<String, ProductVariant> map = new HashMap<>();
-            List<String> cartItemIds = new ArrayList<>();
-            for (ProductVariant pv : response.getProductVariantList()) {
-                map.put(pv.getId(), pv);
-                cartItemIds.add(pv.getCartItemId());
-            }
-            List<CartItemDTO> cartItemDTOs = new ArrayList<>();
-
-            List<CartItem> cartItems = cartItemRepository.findAllByIds(cartItemIds);
-            cartItems.forEach(cartItem -> {
-                ProductVariant pv = map.get(cartItem.getProductVariantId());
-                if (pv != null) {
-                    CartItemDTO cartItemDTO = new CartItemDTO();
-                    ProductVariantDTO productVariantDTO = new ProductVariantDTO();
-                    productVariantDTO.setId(pv.getId());
-                    productVariantDTO.setName(pv.getName());
-                    productVariantDTO.setSlug(pv.getSlug());
-                    productVariantDTO.setColorHex(pv.getColorHex());
-                    productVariantDTO.setColorName(pv.getColorName());
-                    productVariantDTO.setCover(pv.getCover());
-                    productVariantDTO.setOriginalPrice(pv.getOriginalPrice());
-                    productVariantDTO.setPrice(pv.getPrice());
-                    productVariantDTO.setSize(pv.getSize());
-                    cartItemDTO.setId(cartItem.getId());
-                    cartItemDTO.setQuantity(cartItem.getQuantity());
-                    cartItemDTO.setProductVariantDTO(productVariantDTO);
-                    cartItemDTO.setQuantity(cartItem.getQuantity());
-
-                    cartItemDTOs.add(cartItemDTO);
-                }
-            });
-
-            double subTotal = 0;
-            for (CartItemDTO item : cartItemDTOs) {
-                subTotal += item.getProductVariantDTO().getPrice() * item.getQuantity();
-            }
-            Map<String, Object> data = new HashMap<>();
-            data.put("items", cartItemDTOs);
-            data.put("subTotal", subTotal);
-
-            return ResponseData.builder()
-                    .status(HttpStatus.OK.value())
-                    .message("Success")
-                    .data(data)
-                    .build();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+//        String username = AppUtils.getUsername();
+//
+//        try {
+//
+//            Cart cart = cartRepository.findByUsername(username);
+//            if (cart == null) {
+//                return ResponseData.builder()
+//                        .status(HttpStatus.NOT_FOUND.value())
+//                        .message(messageCommon.getMessage(ErrorCode.Cart.NOT_FOUND_WITH_USER_ID, username))
+//                        .data(null)
+//                        .build();
+//            }
+//
+//            List<CartItemProductVariantProjection> projections = cartItemRepository.findAllProductVariantIdsByCartId(cart.getId());
+//
+//            FindProductVariantsByIdsRequest request = FindProductVariantsByIdsRequest.newBuilder()
+//                    .addAllCartItemField(
+//                            projections.stream().map(
+//                                            projection -> CartItemField.newBuilder()
+//                                                    .setCartItemId(projection.getCartItemId())
+//                                                    .setProductVariantId(projection.getProductVariantId())
+//                                                    .build())
+//                                    .toList()
+//                    ).build();
+//
+//            FindProductVariantsByIdsResponse response = productServiceGrpcClient.findProductVariantsByIds(request);
+//            if (response.getStatus() != HttpStatus.OK.value() || response.getProductVariantList().isEmpty()) {
+//                return ResponseData.builder()
+//                        .status(response.getStatus())
+//                        .message(response.getMessage())
+//                        .data(null)
+//                        .build();
+//            }
+//
+//            Map<String, ProductVariant> map = new HashMap<>();
+//            List<String> cartItemIds = new ArrayList<>();
+//            for (ProductVariant pv : response.getProductVariantList()) {
+//                map.put(pv.getId(), pv);
+//                cartItemIds.add(pv.getCartItemId());
+//            }
+//            List<CartItemDTO> cartItemDTOs = new ArrayList<>();
+//
+//            List<CartItem> cartItems = cartItemRepository.findAllByIds(cartItemIds);
+//            cartItems.forEach(cartItem -> {
+//                ProductVariant pv = map.get(cartItem.getProductVariantId());
+//                if (pv != null) {
+//                    CartItemDTO cartItemDTO = new CartItemDTO();
+//                    ProductVariantDTO productVariantDTO = new ProductVariantDTO();
+//                    productVariantDTO.setId(pv.getId());
+//                    productVariantDTO.setName(pv.getName());
+//                    productVariantDTO.setSlug(pv.getSlug());
+//                    productVariantDTO.setColorHex(pv.getColorHex());
+//                    productVariantDTO.setColorName(pv.getColorName());
+//                    productVariantDTO.setCover(pv.getCover());
+//                    productVariantDTO.setOriginalPrice(pv.getOriginalPrice());
+//                    productVariantDTO.setPrice(pv.getPrice());
+//                    productVariantDTO.setSize(pv.getSize());
+//                    cartItemDTO.setId(cartItem.getId());
+//                    cartItemDTO.setQuantity(cartItem.getQuantity());
+//                    cartItemDTO.setProductVariantDTO(productVariantDTO);
+//                    cartItemDTO.setQuantity(cartItem.getQuantity());
+//
+//                    cartItemDTOs.add(cartItemDTO);
+//                }
+//            });
+//
+//            double subTotal = 0;
+//            for (CartItemDTO item : cartItemDTOs) {
+//                subTotal += item.getProductVariantDTO().getPrice() * item.getQuantity();
+//            }
+//            Map<String, Object> data = new HashMap<>();
+//            data.put("items", cartItemDTOs);
+//            data.put("subTotal", subTotal);
+//
+//            return ResponseData.builder()
+//                    .status(HttpStatus.OK.value())
+//                    .message("Success")
+//                    .data(data)
+//                    .build();
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+        return null;
     }
 }

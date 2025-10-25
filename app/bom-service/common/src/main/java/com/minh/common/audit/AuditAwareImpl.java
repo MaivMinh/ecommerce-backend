@@ -20,7 +20,7 @@ public class AuditAwareImpl implements AuditorAware<String> {
     public Optional<String> getCurrentAuditor() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication == null) {
-            return Optional.empty();
+            return Optional.of("MS");
         }
         return Optional.ofNullable(authentication.getName());
     }

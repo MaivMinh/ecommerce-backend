@@ -2,10 +2,12 @@ package com.minh.promotion_service.service.impl;
 
 import com.minh.common.constants.ErrorCode;
 import com.minh.common.constants.ResponseMessages;
+import com.minh.common.events.PromotionAppliedEvent;
 import com.minh.common.message.MessageCommon;
 import com.minh.common.utils.AppUtils;
 import com.minh.promotion_service.command.events.PromotionCreatedEvent;
 import com.minh.promotion_service.dto.PromotionDTO;
+import com.minh.promotion_service.entity.OrderPromotion;
 import com.minh.promotion_service.entity.Promotion;
 import com.minh.promotion_service.payload.response.ResponseData;
 import com.minh.promotion_service.query.queries.GetPromotionsQuery;
@@ -19,10 +21,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -86,5 +92,22 @@ public class PromotionServiceImpl implements PromotionService {
                 .message(ResponseMessages.SUCCESS)
                 .data(payload)
                 .build();
+    }
+
+    @Override
+    public PromotionDTO findById(String promotionId) {
+        Promotion promotion = promotionRepository.findById(promotionId).orElse(null);
+        if (Objects.isNull(promotion)) return null;
+        return modelMapper.map(promotion, PromotionDTO.class);
+    }
+
+    @Override
+    public void updatePromotion(PromotionDTO dto) {
+        Promotion promotion = promotionRepository.findById(dto.getId()).orElse(null);
+        if (Objects.isNull(promotion)) {
+            throw new RuntimeException(messageCommon.getMessage(ErrorCode.Promotion.NOT_FOUND , dto.getId()));
+        }
+        modelMapper.map(dto,promotion);
+        promotionRepository.save(promotion);
     }
 }

@@ -18,7 +18,8 @@ import java.util.concurrent.TimeUnit;
 @Validated
 @RequestMapping(value = "/api/promotions")
 @RequiredArgsConstructor
-public class PromotionQueryController {
+public class
+PromotionQueryController {
     private final QueryGateway queryGateway;
 
     @GetMapping(value = "")
