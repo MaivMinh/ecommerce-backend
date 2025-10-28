@@ -17,17 +17,17 @@ public class BaseEntity {
 
     @CreatedBy
     @Column(name = "created_by", updatable = false)
-    private String createdBy;
+    protected String createdBy;
 
     @CreatedDate
     @Column(name = "created_at", updatable = false)
-    private Timestamp createdAt;
+    protected Timestamp createdAt;
 
     @LastModifiedBy
     @Column(name = "updated_by", insertable = false)
-    private String updatedBy;
+    protected String updatedBy;
 
     @LastModifiedDate
     @Column(name = "updated_at", insertable = false)
-    private Timestamp updatedAt;
+    protected Timestamp updatedAt;
 }

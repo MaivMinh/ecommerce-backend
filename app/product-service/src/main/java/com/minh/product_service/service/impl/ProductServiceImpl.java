@@ -12,6 +12,7 @@ import com.minh.product_service.dto.ProductDTO;
 import com.minh.product_service.dto.ProductImageDTO;
 import com.minh.product_service.dto.ProductVariantDTO;
 import com.minh.product_service.entity.Product;
+import com.minh.product_service.payload.response.ProductVariantGrpc;
 import com.minh.product_service.query.queries.*;
 import com.minh.product_service.repository.ProductRepository;
 import com.minh.product_service.repository.ReserveProductRepository;
@@ -28,6 +29,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
+import product_service.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -340,11 +342,11 @@ public class ProductServiceImpl implements ProductService {
                         .collect(Collectors.toList()))
                 .build();
     }
-//
-//    @Override
-//    public FindProductVariantByIdResponse findProductVariantById(FindProductVariantByIdRequest request) {
-//        return null;
-//    }
+
+    @Override
+    public FindProductVariantByIdResponse findProductVariantById(FindProductVariantByIdRequest request) {
+        return null;
+    }
 
     /**
      * Tìm nhiều biến thể sản phẩm theo danh sách ID.
@@ -352,96 +354,97 @@ public class ProductServiceImpl implements ProductService {
      * @param request
      * @return FindProductVariantsByIdsResponse
      */
-//    @Override
-//    public FindProductVariantsByIdsResponse findProductVariantsByIds(FindProductVariantsByIdsRequest request) {
-//        if (CollectionUtils.isEmpty(request.getCartItemFieldList())) {
-//            return FindProductVariantsByIdsResponse.newBuilder()
-//                    .setStatus(HttpStatus.BAD_REQUEST.value())
-//                    .setMessage("Không tìm thấy danh sách ID.")
-//                    .build();
-//        }
-//
-//        List<CartItemField> cartItemFields = request.getCartItemFieldList().stream().toList();
-//        Map<String, Object> map = new HashMap<>();
-//        List<String> productVariantIds = new ArrayList<>();
-//        for (CartItemField cartItemField : cartItemFields) {
-//            map.put(cartItemField.getProductVariantId(), cartItemField);
-//            productVariantIds.add(cartItemField.getProductVariantId());
-//        }
-//        List<ProductVariant> productVariants = new ArrayList<>();
-//        List<ProductVariantDTO> productVariantDTOS = productVariantService.findProductVariantsByIds(productVariantIds);
-//        if (CollectionUtils.isEmpty(productVariantDTOS)) {
-//            return FindProductVariantsByIdsResponse.newBuilder()
-//                    .setStatus(HttpStatus.NOT_FOUND.value())
-//                    .setMessage("Không tìm thấy biến thể sản phẩm nào.")
-//                    .build();
-//        }
-//        Product product = productRepository.findById(productVariantDTOS.get(0).getProductId()).orElse(null);
-//        if (!CollectionUtils.isEmpty(productVariantDTOS)) {
-//            productVariantDTOS.forEach(productVariant -> {
-//                CartItemField cartItemField = (CartItemField) map.get(productVariant.getId());
-//                ProductVariant.Builder builder = ProductVariant.newBuilder();
-//                builder.setCartItemId(cartItemField.getCartItemId());
-//                builder.setId(productVariant.getId());
-//                builder.setSize(productVariant.getSize());
-//                builder.setOriginalPrice(productVariant.getOriginalPrice());
-//                builder.setPrice(productVariant.getPrice());
-//                builder.setColorName(productVariant.getColorName());
-//                builder.setColorHex(productVariant.getColorHex());
-//                builder.setCover(product.getCover());
-//                builder.setSlug(product.getSlug());
-//                builder.setName(product.getName());
-//
-//                ProductVariant variant = builder.build();
-//                productVariants.add(variant);
-//            });
-//        }
-//
-//        return FindProductVariantsByIdsResponse.newBuilder()
-//                .setStatus(HttpStatus.OK.value())
-//                .setMessage(ResponseMessages.SUCCESS)
-//                .addAllProductVariant(productVariants)
-//                .build();
-//    }
+    @Override
+    public FindProductVariantsByIdsResponse findProductVariantsByIds(FindProductVariantsByIdsRequest request) {
+        if (CollectionUtils.isEmpty(request.getCartItemFieldList())) {
+            return FindProductVariantsByIdsResponse.newBuilder()
+                    .setStatus(HttpStatus.BAD_REQUEST.value())
+                    .setMessage("Không tìm thấy danh sách ID.")
+                    .build();
+        }
+
+        List<CartItemField> cartItemFields = request.getCartItemFieldList().stream().toList();
+        Map<String, Object> map = new HashMap<>();
+        List<String> productVariantIds = new ArrayList<>();
+        for (CartItemField cartItemField : cartItemFields) {
+            map.put(cartItemField.getProductVariantId(), cartItemField);
+            productVariantIds.add(cartItemField.getProductVariantId());
+        }
+        List<ProductVariant> productVariants = new ArrayList<>();
+        List<ProductVariantDTO> productVariantDTOS = productVariantService.findProductVariantsByIds(productVariantIds);
+        if (CollectionUtils.isEmpty(productVariantDTOS)) {
+            return FindProductVariantsByIdsResponse.newBuilder()
+                    .setStatus(HttpStatus.NOT_FOUND.value())
+                    .setMessage("Không tìm thấy biến thể sản phẩm nào.")
+                    .build();
+        }
+        Product product = productRepository.findById(productVariantDTOS.get(0).getProductId()).orElse(null);
+        if (!CollectionUtils.isEmpty(productVariantDTOS)) {
+            productVariantDTOS.forEach(productVariant -> {
+                CartItemField cartItemField = (CartItemField) map.get(productVariant.getId());
+                ProductVariant.Builder builder = ProductVariant.newBuilder();
+                builder.setCartItemId(cartItemField.getCartItemId());
+                builder.setId(productVariant.getId());
+                builder.setSize(productVariant.getSize());
+                builder.setOriginalPrice(productVariant.getOriginalPrice());
+                builder.setPrice(productVariant.getPrice());
+                builder.setColorName(productVariant.getColorName());
+                builder.setColorHex(productVariant.getColorHex());
+                builder.setCover(product.getCover());
+                builder.setSlug(product.getSlug());
+                builder.setName(product.getName());
+
+                ProductVariant variant = builder.build();
+                productVariants.add(variant);
+            });
+        }
+
+        return FindProductVariantsByIdsResponse.newBuilder()
+                .setStatus(HttpStatus.OK.value())
+                .setMessage(ResponseMessages.SUCCESS)
+                .addAllProductVariant(productVariants)
+                .build();
+    }
 
 
-//    @Override
-//    public FindProductVariantByListProductVariantIdResponse findProductVariantByListId(FindProductVariantByListProductVariantIdRequest request) {
-//        Map<String, String> variantToOrderItemMapping = new HashMap<>();
-//
-//        for (OrderItemAndProductVariantId item : request.getIdsList()) {
-//            variantToOrderItemMapping.put(item.getProductVariantId(), item.getOrderItemId());
-//
-//        }
-//
-//        List<String> productVariantIds = request.getIdsList().stream().map(
-//                OrderItemAndProductVariantId::getProductVariantId
-//        ).toList();
-//
-//        List<ProductVariantGrpc> productVariantGrpc = productVariantService.findProductVariantsByIdsGrpc(productVariantIds);
-//        if (CollectionUtils.isEmpty(productVariantGrpc)) {
-//            return FindProductVariantByListProductVariantIdResponse.newBuilder()
-//                    .setStatus(HttpStatus.NOT_FOUND.value())
-//                    .setMessage("Không tìm thấy biến thể sản phẩm nào.")
-//                    .build();
-//        }
-//        List<ProductVariantRes> productVariantRes = productVariantGrpc.stream()
-//                .map(productVariant -> ProductVariantRes.newBuilder()
-//                        .setId(productVariant.getId())
-//                        .setName(productVariant.getName())
-//                        .setSlug(productVariant.getSlug())
-//                        .setSize(productVariant.getSize())
-//                        .setColorName(productVariant.getColorName())
-//                        .setColorHex(productVariant.getColorHex())
-//                        .setPrice(productVariant.getPrice())
-//                        .setOriginalPrice(productVariant.getOriginalPrice())
-//                        .setOrderItemId(variantToOrderItemMapping.get(productVariant.getId()))
-//                        .build())
-//                .toList();
-//        return FindProductVariantByListProductVariantIdResponse.newBuilder()
-//                .setStatus(HttpStatus.OK.value())
-//                .setMessage(ResponseMessages.SUCCESS)
-//                .addAllProductVariants(productVariantRes)
-//                .build();
-//    }
+    @Override
+    public FindProductVariantByListProductVariantIdResponse findProductVariantByListId(FindProductVariantByListProductVariantIdRequest request) {
+        Map<String, String> variantToOrderItemMapping = new HashMap<>();
+
+        for (OrderItemAndProductVariantId item : request.getIdsList()) {
+            variantToOrderItemMapping.put(item.getProductVariantId(), item.getOrderItemId());
+
+        }
+
+        List<String> productVariantIds = request.getIdsList().stream().map(
+                OrderItemAndProductVariantId::getProductVariantId
+        ).toList();
+
+        List<ProductVariantGrpc> productVariantGrpc = productVariantService.findProductVariantsByIdsGrpc(productVariantIds);
+        if (CollectionUtils.isEmpty(productVariantGrpc)) {
+            return FindProductVariantByListProductVariantIdResponse.newBuilder()
+                    .setStatus(HttpStatus.NOT_FOUND.value())
+                    .setMessage("Không tìm thấy biến thể sản phẩm nào.")
+                    .build();
+        }
+        List<ProductVariantRes> productVariantRes = productVariantGrpc.stream()
+                .map(productVariant -> ProductVariantRes.newBuilder()
+                        .setId(productVariant.getId())
+                        .setName(productVariant.getName())
+                        .setSlug(productVariant.getSlug())
+                        .setSize(productVariant.getSize())
+                        .setColorName(productVariant.getColorName())
+                        .setColorHex(productVariant.getColorHex())
+                        .setPrice(productVariant.getPrice())
+                        .setCover(productVariant.getCover())
+                        .setOriginalPrice(productVariant.getOriginalPrice())
+                        .setOrderItemId(variantToOrderItemMapping.get(productVariant.getId()))
+                        .build())
+                .toList();
+        return FindProductVariantByListProductVariantIdResponse.newBuilder()
+                .setStatus(HttpStatus.OK.value())
+                .setMessage(ResponseMessages.SUCCESS)
+                .addAllProductVariants(productVariantRes)
+                .build();
+    }
 }

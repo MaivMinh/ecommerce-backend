@@ -3,11 +3,13 @@ package com.minh.order_service.service;
 import com.minh.common.events.CreatedOrderConfirmedEvent;
 import com.minh.common.events.OrderCreatedEvent;
 import com.minh.common.events.OrderCreatedRollbackedEvent;
+import com.minh.order_service.payload.request.SearchOrdersForUserRequest;
 import com.minh.order_service.payload.response.OrderDetailRes;
 import com.minh.order_service.payload.response.ResponseData;
 import com.minh.order_service.query.controller.SearchOrdersRequest;
 import com.minh.order_service.query.queries.FindOverallStatusOfCreatingOrderQuery;
 import com.minh.order_service.query.queries.GetOrderDetailQuery;
+import com.minh.order_service.query.queries.SearchOrdersForUserQuery;
 
 public interface OrderService {
     void createOrder(OrderCreatedEvent event);
@@ -24,4 +26,6 @@ public interface OrderService {
     OrderDetailRes getOrderDetail(GetOrderDetailQuery query);
 
     ResponseData searchOrders(SearchOrdersRequest request);
+
+    ResponseData searchOrdersForUser(SearchOrdersForUserQuery query);
 }

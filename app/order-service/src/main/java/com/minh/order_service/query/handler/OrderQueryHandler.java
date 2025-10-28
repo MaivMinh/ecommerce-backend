@@ -1,10 +1,13 @@
 package com.minh.order_service.query.handler;
 
+import com.minh.common.utils.AppUtils;
+import com.minh.order_service.payload.request.SearchOrdersForUserRequest;
 import com.minh.order_service.payload.response.OrderDetailRes;
 import com.minh.order_service.payload.response.ResponseData;
 import com.minh.order_service.query.controller.SearchOrdersRequest;
 import com.minh.order_service.query.queries.FindOverallStatusOfCreatingOrderQuery;
 import com.minh.order_service.query.queries.GetOrderDetailQuery;
+import com.minh.order_service.query.queries.SearchOrdersForUserQuery;
 import com.minh.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import org.axonframework.queryhandling.QueryHandler;
@@ -28,5 +31,10 @@ public class OrderQueryHandler {
     @QueryHandler
     public ResponseData handle(SearchOrdersRequest request) {
         return orderService.searchOrders(request);
+    }
+
+    @QueryHandler
+    public ResponseData handle(SearchOrdersForUserQuery query) {
+        return orderService.searchOrdersForUser(query);
     }
 }

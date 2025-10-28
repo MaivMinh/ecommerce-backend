@@ -5,6 +5,7 @@ import com.minh.product_service.command.events.ProductCreatedEvent;
 import com.minh.product_service.command.events.ProductDeletedEvent;
 import com.minh.product_service.command.events.ProductUpdatedEvent;
 import com.minh.product_service.query.queries.*;
+import product_service.*;
 
 public interface ProductService {
     ResponseData findProducts(FindProductsQuery query);
@@ -24,10 +25,10 @@ public interface ProductService {
     ResponseData findProductVariantsByProductId(FindProductVariantsByProductIdQuery query);
 
     ResponseData findNewestProducts(FindNewestProductsQuery query);
-//
-//    FindProductVariantByIdResponse findProductVariantById(FindProductVariantByIdRequest request);
-//
-//    FindProductVariantsByIdsResponse findProductVariantsByIds(FindProductVariantsByIdsRequest request);
-//
-//    FindProductVariantByListProductVariantIdResponse findProductVariantByListId(FindProductVariantByListProductVariantIdRequest request);
+
+    FindProductVariantByIdResponse findProductVariantById(FindProductVariantByIdRequest request);
+
+    FindProductVariantsByIdsResponse findProductVariantsByIds(FindProductVariantsByIdsRequest request);
+
+    FindProductVariantByListProductVariantIdResponse findProductVariantByListId(FindProductVariantByListProductVariantIdRequest request);
 }

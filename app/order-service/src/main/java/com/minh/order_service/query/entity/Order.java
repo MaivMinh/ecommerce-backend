@@ -11,6 +11,8 @@ import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.sql.Timestamp;
+
 @Entity
 @Table(name = "orders")
 @Getter
@@ -27,4 +29,12 @@ public class Order extends BaseEntity {
     private String note;
     @Enumerated(value = jakarta.persistence.EnumType.STRING)
     private OrderStatus status;
+
+    public Timestamp getCreatedAt() {
+        return super.createdAt;
+    }
+
+    public String getCreatedBy() {
+        return super.createdBy;
+    }
 }

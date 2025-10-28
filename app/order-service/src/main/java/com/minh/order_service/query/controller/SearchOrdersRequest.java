@@ -7,7 +7,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class SearchOrdersRequest extends SearchDTO {
-    private String orderId;
-    private String username;
+    private String keyword;
     private String status;
+
+    public void setPage(int page) {
+        super.setPage(page);
+    }
+    public void setSize(int size) {
+        super.setSize(size);
+    }
 }
