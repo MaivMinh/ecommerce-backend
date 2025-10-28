@@ -12,8 +12,6 @@ spring:
   threads:
     virtual:
       enabled: true
-  config:
-    import: ${SPRING_CONFIG_IMPORT:optional:configserver:http://localhost:8071/}
 
   sql:
     init:

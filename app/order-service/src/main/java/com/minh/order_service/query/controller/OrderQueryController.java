@@ -1,15 +1,25 @@
 package com.minh.order_service.query.controller;
 
 import com.minh.common.constants.ResponseMessages;
+import com.minh.common.utils.AppUtils;
+import com.minh.order_service.enums.OrderStatus;
+import com.minh.order_service.payload.request.SearchOrdersForUserRequest;
 import com.minh.order_service.payload.response.OrderDetailRes;
 import com.minh.order_service.payload.response.ResponseData;
 import com.minh.order_service.query.queries.GetOrderDetailQuery;
+import com.minh.order_service.query.queries.SearchOrdersForUserQuery;
 import lombok.RequiredArgsConstructor;
+import org.axonframework.messaging.MetaData;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")
@@ -32,8 +42,23 @@ public class OrderQueryController {
     }
 
     @PostMapping("/all")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ResponseData> getOrders(@RequestBody SearchOrdersRequest request) {
         ResponseData response = queryGateway.query(request, ResponseTypes.instanceOf(ResponseData.class)).join();
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
+
+    @PostMapping("/search")
+    public ResponseEntity<ResponseData> getOrdersForUser(@RequestBody SearchOrdersForUserRequest request) {
+        SearchOrdersForUserQuery query = SearchOrdersForUserQuery.builder()
+                .keyword(request.getKeyword())
+                .build();
+        if (StringUtils.hasText(request.getStatus())) {
+            query.setStatus(OrderStatus.valueOf(request.getStatus()));
+        }
+        query.setPage(request.getPage());
+        query.setSize(request.getSize());
+        ResponseData response = queryGateway.query(query, ResponseTypes.instanceOf(ResponseData.class)).join();
         return ResponseEntity.status(response.getStatus()).body(response);
     }
 }

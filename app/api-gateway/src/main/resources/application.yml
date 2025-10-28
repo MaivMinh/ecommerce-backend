@@ -30,8 +30,8 @@ spring:
                 name: productService
                 fallbackUri: "forward:/products/contact-support"
 
-        - id: side-service
-          uri: lb://side-service
+        - id: support-service
+          uri: lb://support-service
           predicates:
             - Path=/api/carts/**,/api/carts
             - Method=GET,POST,PUT,DELETE,PATCH
@@ -73,8 +73,8 @@ spring:
                 name: promotionService
                 fallbackUri: "forward:/promotions/contact-support"
 
-        - id: side-service
-          uri: lb://side-service
+        - id: support-service
+          uri: lb://support-service
           predicates:
             - Path=/api/files/**,/api/files
             - Method=GET,POST,PUT,DELETE,PATCH
@@ -84,8 +84,8 @@ spring:
                 name: fileService
                 fallbackUri: "forward:/files/contact-support"
 
-        - id: side-service
-          uri: lb://side-service
+        - id: support-service
+          uri: lb://support-service
           predicates:
             - Path=/api/reviews/**,/api/reviews
             - Method=GET,POST,PUT,DELETE,PATCH
@@ -95,8 +95,8 @@ spring:
                 name: reviewService
                 fallbackUri: "forward:/reviews/contact-support"
 
-        - id: side-service
-          uri: lb://side-service
+        - id: support-service
+          uri: lb://support-service
           predicates:
             - Path=/api/users/**,/api/addresses/**,/api/users,/api/addresses
             - Method=GET,POST,PUT,DELETE,PATCH
@@ -247,5 +247,7 @@ resilience4j:
         waitDurationInOpenState: 10000
         failureRateThreshold: 70
 
-keycloak:
-  client: e-commerce
+grpc:
+  client:
+    product-service:
+      negotiation-type: plaintext

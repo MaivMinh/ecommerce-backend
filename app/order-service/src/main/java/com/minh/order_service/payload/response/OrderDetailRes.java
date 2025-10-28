@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.List;
 
 @Getter
@@ -19,6 +20,7 @@ public class OrderDetailRes {
     private String note;
     private String status;
     private List<OrderItemRes> items;
-    private Date createdAt;
+    private Timestamp createdAt;
+    private String createdBy;
     private PaymentStatus paymentStatus;
 }

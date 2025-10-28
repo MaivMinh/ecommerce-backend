@@ -35,7 +35,7 @@ public class AppUtils {
     }
 
     public static Pageable toPageable(SearchDTO searchDTO) {
-        int page = Math.max(0, searchDTO.getPage());   // đảm bảo không âm
+        int page = Math.max(0, searchDTO.getPage() - 1);   // đảm bảo không âm
         int size = Math.max(1, searchDTO.getSize());   // đảm bảo size >= 1
         return PageRequest.of(page, size);
     }

@@ -50,20 +50,10 @@
         </dependency>
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-starter-config</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
         <!--        Grpc + Axon Framework Configurations.-->
-        <dependency>
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>annotations-api</artifactId>
-            <version>6.0.53</version>
-            <scope>compile</scope>
-        </dependency>
         <dependency>
             <groupId>org.axonframework</groupId>
             <artifactId>axon-spring-boot-starter</artifactId>
@@ -72,42 +62,5 @@
         <!--        Grpc + Axon Framework Configurations.-->
     </dependencies>
     <build>
-        <extensions>
-            <!-- Hỗ trợ nhận diện OS/CPU -->
-            <extension>
-                <groupId>kr.motd.maven</groupId>
-                <artifactId>os-maven-plugin</artifactId>
-                <version>1.7.0</version>
-            </extension>
-        </extensions>
-        <plugins>
-            <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <version>0.6.1</version>
-                <configuration>
-                    <!-- File .proto gốc -->
-                    <protoSourceRoot>src/main/proto</protoSourceRoot>
-                    <!-- Binary protoc -->
-                    <protocArtifact>
-                        com.google.protobuf:protoc:3.25.1:exe:${os.detected.classifier}
-                    </protocArtifact>
-                    <pluginId>
-                        grpc-java
-                    </pluginId>
-                    <pluginArtifact>
-                        io.grpc:protoc-gen-grpc-java:1.57.2:exe:${os.detected.classifier}
-                    </pluginArtifact>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>compile</goal>
-                            <goal>compile-custom</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-        </plugins>
     </build>
 </project>
