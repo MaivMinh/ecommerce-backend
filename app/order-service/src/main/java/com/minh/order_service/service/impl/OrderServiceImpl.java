@@ -7,20 +7,21 @@ import com.minh.common.events.CreatedOrderConfirmedEvent;
 import com.minh.common.events.OrderCreatedEvent;
 import com.minh.common.events.OrderCreatedRollbackedEvent;
 import com.minh.common.message.MessageCommon;
+import com.minh.common.response.ResponseData;
 import com.minh.common.utils.AppUtils;
+import com.minh.order_service.DTOs.OrderDto;
 import com.minh.order_service.enums.OrderStatus;
 import com.minh.order_service.enums.PaymentStatus;
 import com.minh.order_service.grpc.client.PaymentGrpcClient;
 import com.minh.order_service.grpc.client.ProductGrpcClient;
 import com.minh.order_service.grpc.client.SupportGrpcClient;
-import com.minh.order_service.payload.request.SearchOrdersForUserRequest;
 import com.minh.order_service.payload.response.OrderDetailRes;
 import com.minh.order_service.payload.response.OrderItemRes;
-import com.minh.order_service.payload.response.ResponseData;
 import com.minh.order_service.payload.response.ShippingAddressRes;
 import com.minh.order_service.query.controller.SearchOrdersRequest;
 import com.minh.order_service.query.entity.Order;
 import com.minh.order_service.query.entity.OrderItem;
+import com.minh.order_service.query.queries.FindOverallOrderStatusQuery;
 import com.minh.order_service.query.queries.FindOverallStatusOfCreatingOrderQuery;
 import com.minh.order_service.query.queries.GetOrderDetailQuery;
 import com.minh.order_service.query.queries.SearchOrdersForUserQuery;
@@ -29,10 +30,8 @@ import com.minh.order_service.service.OrderItemService;
 import com.minh.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.axonframework.messaging.MetaData;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -60,6 +59,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductGrpcClient productGrpcClient;
     private final SupportGrpcClient supportGrpcClient;
     private final PaymentGrpcClient paymentGrpcClient;
+
 
     @Override
     @Transactional
@@ -91,7 +91,6 @@ public class OrderServiceImpl implements OrderService {
         );
         order.setStatus(OrderStatus.CANCELLED);
 
-        /// Remove all order items related to this order.
         orderItemService.removeAllByOrderId(order.getId());
     }
 
@@ -271,6 +270,32 @@ public class OrderServiceImpl implements OrderService {
                 .status(200)
                 .message(ResponseMessages.SUCCESS)
                 .data(data)
+                .build();
+    }
+
+    @Override
+    public ResponseData findOverallOrderStatusQuery(FindOverallOrderStatusQuery query) {
+        if (!StringUtils.hasText(query.getOrderId())) {
+            return ResponseData.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message(messageCommon.getMessage(ErrorCode.INVALID_PARAMS))
+                    .data(null)
+                    .build();
+        }
+
+        Order order = orderRepository.findById(query.getOrderId()).orElse(null);
+        if (order == null) {
+            return ResponseData.builder()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .message(messageCommon.getMessage(ErrorCode.Order.NOT_FOUND, query.getOrderId()))
+                    .data(null)
+                    .build();
+        }
+        OrderDto dto = modelMapper.map(order, OrderDto.class);
+        return ResponseData.builder()
+                .status(HttpStatus.OK.value())
+                .message(ResponseMessages.SUCCESS)
+                .data(dto)
                 .build();
     }
 }

@@ -53,7 +53,6 @@ public class AuthorizationInterceptorFilter extends OncePerRequestFilter {
             String[] parts = token.split("\\.");
 
             String payloadJson = new String(Base64.getUrlDecoder().decode(parts[1]));
-
             ObjectMapper mapper = new ObjectMapper();
             Map<String, Object> payload = mapper.readValue(payloadJson, Map.class);
 
@@ -117,6 +116,6 @@ public class AuthorizationInterceptorFilter extends OncePerRequestFilter {
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
         String path = request.getServletPath();
-        return (path.contains("swagger-ui") || path.contains("v3/api-docs"));
+        return (path.contains("swagger-ui") || path.contains("v3/api-docs") || path.contains("actuator"));
     }
 }

@@ -56,6 +56,7 @@ public class SecurityConfig {
         lstUrl.add("/api/v1/recruitment/job-ad/**");
         lstUrl.add("/api/v1/recruitment/candidate/apply");
         lstUrl.add("/api/v1/recruitment/auth/login");
+        lstUrl.add("/actuator/**");
         return lstUrl.toArray(new String[0]);
     }
 

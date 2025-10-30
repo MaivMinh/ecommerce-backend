@@ -105,4 +105,20 @@ public class ProductQueryController {
         ResponseData response = queryGateway.query(query, ResponseTypes.instanceOf(ResponseData.class)).join();
         return ResponseEntity.status(response.getStatus()).body(response);
     }
+
+    @GetMapping(value = "/search-by-keyword")
+    public ResponseEntity<ResponseData> searchProductsByKeyword(
+            @RequestParam(name = "keyword") String keyword,
+            @RequestParam(name = "page", defaultValue = "1", required = false) Integer page,
+            @RequestParam(name = "size", defaultValue = "10", required = false) Integer size) {
+        SearchProductByKeywordQuery query = SearchProductByKeywordQuery.builder()
+                .keyword(keyword)
+                .build();
+
+        query.setPage(page);
+        query.setSize(size);
+
+        ResponseData response = queryGateway.query(query, ResponseTypes.instanceOf(ResponseData.class)).join();
+        return ResponseEntity.status(response.getStatus()).body(response);
+    }
 }

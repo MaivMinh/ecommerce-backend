@@ -41,4 +41,9 @@ public class ProductQueryHandler {
     public ResponseData handle(FindNewestProductsQuery query) {
         return productService.findNewestProducts(query);
     }
+
+    @QueryHandler
+    public ResponseData handle(SearchProductByKeywordQuery query) {
+        return productService.searchProductByKeyword(query);
+    }
 }

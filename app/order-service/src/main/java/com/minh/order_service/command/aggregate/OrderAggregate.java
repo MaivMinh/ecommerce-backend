@@ -41,12 +41,11 @@ public class OrderAggregate {
         log.info("Handling CreateOrderCommand: {}", command);
         OrderCreatedEvent event = new OrderCreatedEvent();
         BeanUtils.copyProperties(command, event);
-        AggregateLifecycle.apply(event, MetaData.with("username", username));
+        AggregateLifecycle.apply(event);
     }
     @EventSourcingHandler
     public void on(OrderCreatedEvent event) {
         this.orderId = event.getOrderId();
-        this.username = event.getUsername();
         this.shippingAddressId = event.getShippingAddressId();
         this.currency = event.getCurrency();
         this.discount = event.getDiscount();
