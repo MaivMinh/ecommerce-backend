@@ -2,12 +2,12 @@ package com.minh.order_service.saga;
 
 import com.minh.common.DTOs.ReserveProductItem;
 import com.minh.common.commands.*;
+import com.minh.common.constants.ResponseMessages;
 import com.minh.common.events.*;
+import com.minh.common.response.ResponseData;
 import com.minh.common.utils.AppUtils;
+import com.minh.order_service.query.queries.FindOverallOrderStatusQuery;
 import lombok.extern.slf4j.Slf4j;
-import org.axonframework.commandhandling.CommandCallback;
-import org.axonframework.commandhandling.CommandMessage;
-import org.axonframework.commandhandling.CommandResultMessage;
 import org.axonframework.commandhandling.gateway.CommandGateway;
 import org.axonframework.modelling.saga.EndSaga;
 import org.axonframework.modelling.saga.SagaEventHandler;
@@ -16,9 +16,10 @@ import org.axonframework.queryhandling.QueryUpdateEmitter;
 import org.axonframework.spring.stereotype.Saga;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.annotation.Nonnull;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Saga
 @Slf4j
@@ -27,9 +28,6 @@ public class OrderProcessManager {
     private transient CommandGateway commandGateway;
     @Autowired
     private transient QueryUpdateEmitter queryUpdateEmitter;
-
-    public OrderProcessManager() {
-    }
 
     /// ====================================== SAGA HAPPY FLOW ====================================== ///
 
@@ -55,16 +53,13 @@ public class OrderProcessManager {
                 .total(event.getTotal())
                 .build();
 
-        commandGateway.send(command, new CommandCallback<>() {
-            @Override
-            public void onResult(@Nonnull CommandMessage<? extends ReserveProductCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
-                if (commandResultMessage.isExceptional()) {
-                    log.error("Saga Event 1 [Error] : Failed to reserve product for order id: {}, rolling back order creation.", event.getOrderId());
-                    RollbackCreateOrderCommand rollbackCommand = new RollbackCreateOrderCommand();
-                    rollbackCommand.setOrderId(event.getOrderId());
-                    rollbackCommand.setErrorMsg(commandResultMessage.exceptionResult().getMessage());
-                    commandGateway.sendAndWait(rollbackCommand);
-                }
+        commandGateway.send(command, (commandMessage, commandResultMessage) -> {
+            if (commandResultMessage.isExceptional()) {
+                log.error("Saga Event 1 [Error] : Failed to reserve product for order id: {}, rolling back order creation.", event.getOrderId());
+                RollbackCreateOrderCommand rollbackCommand = new RollbackCreateOrderCommand();
+                rollbackCommand.setOrderId(event.getOrderId());
+                rollbackCommand.setErrorMsg(commandResultMessage.exceptionResult().getMessage());
+                commandGateway.sendAndWait(rollbackCommand);
             }
         });
     }
@@ -84,18 +79,15 @@ public class OrderProcessManager {
                 .currency(event.getCurrency())
                 .build();
 
-        commandGateway.send(command, new CommandCallback<>() {
-            @Override
-            public void onResult(@Nonnull CommandMessage<? extends ApplyPromotionCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
-                if (commandResultMessage.isExceptional()) {
-                    log.error("Saga Event 2 [Error] : Failed to apply promotion for order id: {}, rolling back order creation.", event.getOrderId());
-                    RollbackReserveProductCommand rollbackCommand = RollbackReserveProductCommand.builder()
-                            .reserveProductId(event.getReserveProductId())
-                            .orderId(event.getOrderId())
-                            .errorMsg(commandResultMessage.exceptionResult().getMessage())
-                            .build();
-                    commandGateway.sendAndWait(rollbackCommand);
-                }
+        commandGateway.send(command, (commandMessage, commandResultMessage) -> {
+            if (commandResultMessage.isExceptional()) {
+                log.error("Saga Event 2 [Error] : Failed to apply promotion for order id: {}, rolling back order creation.", event.getOrderId());
+                RollbackReserveProductCommand rollbackCommand = RollbackReserveProductCommand.builder()
+                        .reserveProductId(event.getReserveProductId())
+                        .orderId(event.getOrderId())
+                        .errorMsg(commandResultMessage.exceptionResult().getMessage())
+                        .build();
+                commandGateway.sendAndWait(rollbackCommand);
             }
         });
     }
@@ -114,19 +106,16 @@ public class OrderProcessManager {
                 .currency(event.getCurrency())
                 .build();
 
-        commandGateway.send(command, new CommandCallback<>() {
-            @Override
-            public void onResult(@Nonnull CommandMessage<? extends ProcessPaymentCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
-                if (commandResultMessage.isExceptional()) {
-                    log.error("Saga Event 3 [Error] : Failed to process payment for order id: {}, rolling back order creation.", event.getOrderId());
-                    RollbackApplyPromotionCommand rollbackCommand = RollbackApplyPromotionCommand.builder()
-                            .orderPromotionId(event.getOrderPromotionId())
-                            .reserveProductId(event.getReserveProductId())
-                            .orderId(event.getOrderId())
-                            .errorMsg(commandResultMessage.exceptionResult().getMessage())
-                            .build();
-                    commandGateway.sendAndWait(rollbackCommand);
-                }
+        commandGateway.send(command, (commandMessage, commandResultMessage) -> {
+            if (commandResultMessage.isExceptional()) {
+                log.error("Saga Event 3 [Error] : Failed to process payment for order id: {}, rolling back order creation.", event.getOrderId());
+                RollbackApplyPromotionCommand rollbackCommand = RollbackApplyPromotionCommand.builder()
+                        .orderPromotionId(event.getOrderPromotionId())
+                        .reserveProductId(event.getReserveProductId())
+                        .orderId(event.getOrderId())
+                        .errorMsg(commandResultMessage.exceptionResult().getMessage())
+                        .build();
+                commandGateway.sendAndWait(rollbackCommand);
             }
         });
     }
@@ -141,20 +130,17 @@ public class OrderProcessManager {
                 .orderId(event.getOrderId())
                 .build();
 
-        commandGateway.send(command, new CommandCallback<>() {
-            @Override
-            public void onResult(@Nonnull CommandMessage<? extends ConfirmReservedProductCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
-                if (commandResultMessage.isExceptional()) {
-                    log.error("Saga Event 4 [Error] : Failed to confirm reserved product for payment id: {}, rolling back order creation.", event.getPaymentId());
-                    RollbackProcessPaymentCommand rollbackCommand = RollbackProcessPaymentCommand.builder()
-                            .paymentId(event.getPaymentId())
-                            .orderPromotionId(event.getOrderPromotionId())
-                            .reserveProductId(event.getReserveProductId())
-                            .orderId(event.getOrderId())
-                            .errorMsg(commandResultMessage.exceptionResult().getMessage())
-                            .build();
-                    commandGateway.sendAndWait(rollbackCommand);
-                }
+        commandGateway.send(command, (commandMessage, commandResultMessage) -> {
+            if (commandResultMessage.isExceptional()) {
+                log.error("Saga Event 4 [Error] : Failed to confirm reserved product for payment id: {}, rolling back order creation.", event.getPaymentId());
+                RollbackProcessPaymentCommand rollbackCommand = RollbackProcessPaymentCommand.builder()
+                        .paymentId(event.getPaymentId())
+                        .orderPromotionId(event.getOrderPromotionId())
+                        .reserveProductId(event.getReserveProductId())
+                        .orderId(event.getOrderId())
+                        .errorMsg(commandResultMessage.exceptionResult().getMessage())
+                        .build();
+                commandGateway.sendAndWait(rollbackCommand);
             }
         });
     }
@@ -170,20 +156,17 @@ public class OrderProcessManager {
                 .reserveProductId(event.getReserveProductId())
                 .build();
 
-        commandGateway.send(command, new CommandCallback<>() {
-            @Override
-            public void onResult(@Nonnull CommandMessage<? extends ConfirmCreateOrderCommand> commandMessage, @Nonnull CommandResultMessage<?> commandResultMessage) {
-                if (commandResultMessage.isExceptional()) {
-                    log.error("Saga Event 5 [Error] : Failed to confirm created order for order id: {}, rolling back payment process.", event.getOrderId());
-                    RollbackProcessPaymentCommand rollbackCommand = RollbackProcessPaymentCommand.builder()
-                            .paymentId(event.getPaymentId())
-                            .orderPromotionId(event.getOrderPromotionId())
-                            .reserveProductId(event.getReserveProductId())
-                            .orderId(event.getOrderId())
-                            .errorMsg(commandResultMessage.exceptionResult().getMessage())
-                            .build();
-                    commandGateway.sendAndWait(rollbackCommand);
-                }
+        commandGateway.send(command, (commandMessage, commandResultMessage) -> {
+            if (commandResultMessage.isExceptional()) {
+                log.error("Saga Event 5 [Error] : Failed to confirm created order for order id: {}, rolling back payment process.", event.getOrderId());
+                RollbackProcessPaymentCommand rollbackCommand = RollbackProcessPaymentCommand.builder()
+                        .paymentId(event.getPaymentId())
+                        .orderPromotionId(event.getOrderPromotionId())
+                        .reserveProductId(event.getReserveProductId())
+                        .orderId(event.getOrderId())
+                        .errorMsg(commandResultMessage.exceptionResult().getMessage())
+                        .build();
+                commandGateway.sendAndWait(rollbackCommand);
             }
         });
     }
@@ -192,6 +175,18 @@ public class OrderProcessManager {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(CreatedOrderConfirmedEvent event) {
         log.info("Saga Event 6 [End] : Create order confirmed for order id: {}", event.getOrderId());
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("orderId", event.getOrderId());
+        data.put("paymentId", event.getPaymentId());
+
+        queryUpdateEmitter.emit(FindOverallOrderStatusQuery.class,
+                query -> true,
+                ResponseData.builder()
+                        .status(200)
+                        .message(ResponseMessages.SUCCESS)
+                        .data(data)
+                        .build());
     }
 
     /// ====================================== ROLLBACK SAGA HANDLERS ====================================== ///
@@ -239,5 +234,12 @@ public class OrderProcessManager {
     @SagaEventHandler(associationProperty = "orderId")
     public void on(OrderCreatedRollbackedEvent event) {
         log.info("Saga Event Rollback [END]: Received OrderCreatedRollbackedEvent for order id: {}", event.getOrderId());
+        queryUpdateEmitter.emit(FindOverallOrderStatusQuery.class,
+                query -> true,
+                ResponseData.builder()
+                        .status(500)
+                        .message(ResponseMessages.INTERNAL_SERVER_ERROR)
+                        .data(null)
+                        .build());
     }
 }

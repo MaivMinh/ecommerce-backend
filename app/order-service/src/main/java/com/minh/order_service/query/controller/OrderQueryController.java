@@ -1,15 +1,13 @@
 package com.minh.order_service.query.controller;
 
 import com.minh.common.constants.ResponseMessages;
-import com.minh.common.utils.AppUtils;
+import com.minh.common.response.ResponseData;
 import com.minh.order_service.enums.OrderStatus;
 import com.minh.order_service.payload.request.SearchOrdersForUserRequest;
 import com.minh.order_service.payload.response.OrderDetailRes;
-import com.minh.order_service.payload.response.ResponseData;
 import com.minh.order_service.query.queries.GetOrderDetailQuery;
 import com.minh.order_service.query.queries.SearchOrdersForUserQuery;
 import lombok.RequiredArgsConstructor;
-import org.axonframework.messaging.MetaData;
 import org.axonframework.messaging.responsetypes.ResponseTypes;
 import org.axonframework.queryhandling.QueryGateway;
 import org.springframework.http.ResponseEntity;
@@ -17,9 +15,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/orders")

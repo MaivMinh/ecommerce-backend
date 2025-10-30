@@ -5,11 +5,13 @@ import com.minh.common.constants.ResponseMessages;
 import com.minh.common.enums.ProductStatus;
 import com.minh.common.message.MessageCommon;
 import com.minh.common.response.ResponseData;
+import com.minh.common.utils.AppUtils;
 import com.minh.product_service.command.events.ProductCreatedEvent;
 import com.minh.product_service.command.events.ProductDeletedEvent;
 import com.minh.product_service.command.events.ProductUpdatedEvent;
 import com.minh.product_service.dto.ProductDTO;
 import com.minh.product_service.dto.ProductImageDTO;
+import com.minh.product_service.dto.ProductSearchDTO;
 import com.minh.product_service.dto.ProductVariantDTO;
 import com.minh.product_service.entity.Product;
 import com.minh.product_service.payload.response.ProductVariantGrpc;
@@ -446,5 +448,18 @@ public class ProductServiceImpl implements ProductService {
                 .setMessage(ResponseMessages.SUCCESS)
                 .addAllProductVariants(productVariantRes)
                 .build();
+    }
+
+    @Override
+    public ResponseData searchProductByKeyword(SearchProductByKeywordQuery query) {
+        Pageable pageable = AppUtils.toPageable(query);
+
+        Page<Product> pagedProducts = productRepository.searchProductByKeyword(query.getKeyword(), pageable);
+        Map<String, Object> data = new HashMap<>();
+        List<ProductSearchDTO> productSearchDTOS = pagedProducts.stream()
+                .map(product -> modelMapper.map(product, ProductSearchDTO.class))
+                .collect(Collectors.toList());
+
+        return null;
     }
 }

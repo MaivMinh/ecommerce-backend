@@ -31,4 +31,6 @@ public interface ProductService {
     FindProductVariantsByIdsResponse findProductVariantsByIds(FindProductVariantsByIdsRequest request);
 
     FindProductVariantByListProductVariantIdResponse findProductVariantByListId(FindProductVariantByListProductVariantIdRequest request);
+
+    ResponseData searchProductByKeyword(SearchProductByKeywordQuery query);
 }
