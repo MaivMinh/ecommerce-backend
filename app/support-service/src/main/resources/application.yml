@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8086
 
 spring:
   application:
@@ -9,6 +9,20 @@ spring:
   threads:
     virtual:
       enabled: true
+  cloud:
+    function:
+      definition: handleOrderCreated
+    stream:
+      bindings: #  Destination bindings component là cầu nối và định nghĩa các kênh (channels) mà ứng dụng sẽ sử dụng để gửi hoặc nhận dữ liệu.
+        springCloudBusInput:
+          destination: springCloudBus
+        handleOrderCreated-in-0:
+          destination: order-created
+          group: ${spring.application.name}
+      kafka:
+        binder:
+          brokers:
+            - ${KAFKA_BROKER:localhost:9092}
 
   sql:
     init:
@@ -85,7 +99,7 @@ logging:
 
 grpc:
   server:
-    port: 9092
+    port: 9096
   client:
     product-service:
       address: ${GRPC_SERVER_PRODUCT_SERVICE_ADDRESS:static://localhost:9091}

@@ -40,7 +40,7 @@ public class GrpcClientConfig {
 
     @Bean
     public SupportServiceGrpc.SupportServiceBlockingStub supportServiceBlockingStub() {
-        String address = env.getProperty("SUPPORT_GRPC_SERVER", "localhost:9092");
+        String address = env.getProperty("SUPPORT_GRPC_SERVER", "localhost:9096");
         return SupportServiceGrpc.newBlockingStub(io.grpc.ManagedChannelBuilder.forTarget(address).keepAliveWithoutCalls(true).usePlaintext().build());
     }
 

@@ -28,5 +28,5 @@ public interface ProductRepository extends JpaRepository<Product, String> {
     List<Product> findNewestProducts(Pageable pageable);
 
     @Query(value = "select p from Product p left join Category c on p.categoryId = c.id where lower(p.name) like lower(concat('%', :keyword,'%')) or lower(p.description) like lower(concat('%', :keyword,'%')) or lower(c.name) like lower(concat('%', :keyword,'%')) or lower(c.description) like lower(concat('%', :keyword, '%')) ")
-    Page<Product> searchProductByKeyword(String keyword, Pageable pageable);
+    Page<Product> searchProductByKeyword(@Param("keyword") String keyword, Pageable pageable);
 }

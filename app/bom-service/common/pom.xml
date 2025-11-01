@@ -103,6 +103,18 @@
             <groupId>org.axonframework</groupId>
             <artifactId>axon-server-connector</artifactId>
         </dependency>
+
+        <!-- Spring Cloud Stream with Kafka -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-stream-kafka</artifactId>
+        </dependency>
+
+        <!-- Spring Cloud Function -->
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-function-context</artifactId>
+        </dependency>
     </dependencies>
     <build>
     </build>

@@ -460,6 +460,16 @@ public class ProductServiceImpl implements ProductService {
                 .map(product -> modelMapper.map(product, ProductSearchDTO.class))
                 .collect(Collectors.toList());
 
-        return null;
+        data.put("products", productSearchDTOS);
+        data.put("page", pagedProducts.getNumber() + 1);
+        data.put("size", pagedProducts.getSize());
+        data.put("totalElements", pagedProducts.getTotalElements());
+        data.put("totalPages", pagedProducts.getTotalPages());
+
+        return ResponseData.builder()
+                .status(HttpStatus.OK.value())
+                .message(ResponseMessages.SUCCESS)
+                .data(data)
+                .build();
     }
 }
