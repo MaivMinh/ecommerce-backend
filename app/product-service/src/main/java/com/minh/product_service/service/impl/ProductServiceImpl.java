@@ -22,6 +22,7 @@ import com.minh.product_service.service.ProductImageService;
 import com.minh.product_service.service.ProductService;
 import com.minh.product_service.service.ProductVariantService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +37,7 @@ import product_service.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ProductServiceImpl implements ProductService {
@@ -395,7 +397,7 @@ public class ProductServiceImpl implements ProductService {
                 builder.setCover(product.getCover());
                 builder.setSlug(product.getSlug());
                 builder.setName(product.getName());
-
+                builder.setProductId(product.getId());
                 ProductVariant variant = builder.build();
                 productVariants.add(variant);
             });
@@ -471,5 +473,74 @@ public class ProductServiceImpl implements ProductService {
                 .message(ResponseMessages.SUCCESS)
                 .data(data)
                 .build();
+    }
+
+    @Override
+    public ResponseData findProductByProductVariantId(FindProductByProductVariantIdQuery query) {
+        if (Objects.isNull(query) || !StringUtils.hasText(query.getProductVariantId())) {
+            return ResponseData.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Dữ liệu không hợp lệ.")
+                    .build();
+        }
+
+        ProductVariantDTO productVariantDTO = productVariantService.findById(query.getProductVariantId());
+        if (Objects.isNull(productVariantDTO)) {
+            return ResponseData.builder()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .message(messageCommon.getMessage(ErrorCode.ProductVariant.NOT_FOUND, query.getProductVariantId()))
+                    .build();
+        }
+
+        String productId = productVariantDTO.getProductId();
+        return ResponseData.builder()
+                .status(200)
+                .message(ResponseMessages.SUCCESS)
+                .data(productId)
+                .build();
+    }
+
+    @Override
+    public FindProductInfoByProductVariantIdResponse findProductInfoByProductVariantId(FindProductInfoByProductVariantIdRequest request) {
+        if (CollectionUtils.isEmpty(request.getProductVariantIdList())) {
+            return FindProductInfoByProductVariantIdResponse.newBuilder()
+                    .setStatus(HttpStatus.BAD_REQUEST.value())
+                    .setMessage("Danh sách productVariantId trống.")
+                    .build();
+        }
+
+        List<String> productVariantIds = request.getProductVariantIdList().stream().toList();
+        List<ProductVariantDTO> productVariantDTOS = productVariantService.findProductVariantsByIds(productVariantIds);
+        if (CollectionUtils.isEmpty(productVariantDTOS)) {
+            return FindProductInfoByProductVariantIdResponse.newBuilder()
+                    .setStatus(HttpStatus.NOT_FOUND.value())
+                    .setMessage("Không tìm thấy biến thể sản phẩm nào.")
+                    .build();
+        }
+
+        List<ProductInfo> productInfos = new ArrayList<>();
+        for (ProductVariantDTO dto : productVariantDTOS) {
+            Product product = productRepository.findById(dto.getProductId()).orElse(null);
+            if (product != null) {
+                ProductInfo.Builder builder = ProductInfo.newBuilder();
+                builder.setProductVariantId(dto.getId());
+                builder.setProductId(product.getId());
+                builder.setProductName(product.getName());
+                builder.setColorName(dto.getColorName());
+                builder.setSize(dto.getSize());
+                builder.setCover(product.getCover());
+                ProductInfo productInfo = builder.build();
+                productInfos.add(productInfo);
+            }
+        }
+
+        log.info("Số lượng productInfos tìm thấy: {}", productInfos.size());
+
+        return FindProductInfoByProductVariantIdResponse.newBuilder()
+                .setStatus(HttpStatus.OK.value())
+                .setMessage(ResponseMessages.SUCCESS)
+                .addAllProducts(productInfos)
+                .build();
+
     }
 }

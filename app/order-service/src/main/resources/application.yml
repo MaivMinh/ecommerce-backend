@@ -16,6 +16,8 @@ spring:
           destination: springCloudBus
         publishOrderCreated-out-0:
           destination: order-created
+        publishNotifyOrderConfirmed-out-0:
+          destination: notify-order-confirmed
       kafka:
         binder:
           brokers:

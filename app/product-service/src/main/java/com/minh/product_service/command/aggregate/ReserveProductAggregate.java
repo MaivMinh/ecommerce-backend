@@ -38,15 +38,11 @@ public class ReserveProductAggregate {
     @CommandHandler
     public ReserveProductAggregate(ReserveProductCommand command) {
         log.info("Handling ReserveProductCommand: {}", command);
-        try {
-            ProductReservedEvent event = new ProductReservedEvent();
-            BeanUtils.copyProperties(command, event);
-            AggregateLifecycle.apply(event);
-        } catch (Exception e) {
-            log.error("Error while processing ReserveProductCommand: {}", e.getMessage(), e);
-            throw new IllegalStateException("Failed to reserve products: " + e.getMessage(), e);
-        }
+        ProductReservedEvent event = new ProductReservedEvent();
+        BeanUtils.copyProperties(command, event);
+        AggregateLifecycle.apply(event);
     }
+
     @EventSourcingHandler
     public void on(ProductReservedEvent event) {
         this.reserveProductId = event.getReserveProductId();
@@ -65,6 +61,7 @@ public class ReserveProductAggregate {
         BeanUtils.copyProperties(command, event);
         AggregateLifecycle.apply(event);
     }
+
     @EventSourcingHandler
     public void on(ReserveProductConfirmedEvent event) {
     }
@@ -76,6 +73,7 @@ public class ReserveProductAggregate {
         BeanUtils.copyProperties(command, event);
         AggregateLifecycle.apply(event);
     }
+
     @EventSourcingHandler
     public void on(ProductReservedRollbackedEvent event) {
         this.errorMsg = event.getErrorMsg();

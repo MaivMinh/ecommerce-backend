@@ -34,7 +34,7 @@ public class OrderProcessManager {
     @StartSaga
     @SagaEventHandler(associationProperty = "orderId")
     public void on(OrderCreatedEvent event) {
-        log.info("Saga Event 1 [Start] : Received OrderCreatedEvent for order id: {}", event.getOrderId());
+        log.info("Saga Event 1 [Start] : Received OrderCreatedEventInput for order id: {}", event.getOrderId());
         List<ReserveProductItem> reserveProductItems = new ArrayList<>();
         event.getOrderItemDtos().forEach(item -> {
             reserveProductItems.add(ReserveProductItem.builder()
@@ -51,6 +51,8 @@ public class OrderProcessManager {
                 .promotionId(event.getPromotionId())
                 .reserveProductItems(reserveProductItems)
                 .total(event.getTotal())
+                .username(event.getUsername())
+                .productId(event.getProductId())
                 .build();
 
         commandGateway.send(command, (commandMessage, commandResultMessage) -> {
@@ -77,6 +79,8 @@ public class OrderProcessManager {
                 .paymentMethodId(event.getPaymentMethodId())
                 .total(event.getTotal())
                 .currency(event.getCurrency())
+                .username(event.getUsername())
+                .productId(event.getProductId())
                 .build();
 
         commandGateway.send(command, (commandMessage, commandResultMessage) -> {
@@ -104,6 +108,8 @@ public class OrderProcessManager {
                 .paymentMethodId(event.getPaymentMethodId())
                 .total(event.getTotal())
                 .currency(event.getCurrency())
+                .username(event.getUsername())
+                .productId(event.getProductId())
                 .build();
 
         commandGateway.send(command, (commandMessage, commandResultMessage) -> {
@@ -128,6 +134,8 @@ public class OrderProcessManager {
                 .paymentId(event.getPaymentId())
                 .orderPromotionId(event.getOrderPromotionId())
                 .orderId(event.getOrderId())
+                .username(event.getUsername())
+                .productId(event.getProductId())
                 .build();
 
         commandGateway.send(command, (commandMessage, commandResultMessage) -> {
@@ -149,11 +157,15 @@ public class OrderProcessManager {
     public void on(ReserveProductConfirmedEvent event) {
         log.info("Saga Event 5 : Reserve product confirmed for order id: {}", event.getOrderId());
         /// Xác nhận đặt chỗ sản phẩm thành công, cập nhật trạng thái đơn hàng trong order-service.
+        log.info("Current username: {}", AppUtils.getUsername());
+
         ConfirmCreateOrderCommand command = ConfirmCreateOrderCommand.builder()
                 .orderId(event.getOrderId())
                 .paymentId(event.getPaymentId())
                 .orderPromotionId(event.getOrderPromotionId())
                 .reserveProductId(event.getReserveProductId())
+                .username(event.getUsername())
+                .productId(event.getProductId())
                 .build();
 
         commandGateway.send(command, (commandMessage, commandResultMessage) -> {

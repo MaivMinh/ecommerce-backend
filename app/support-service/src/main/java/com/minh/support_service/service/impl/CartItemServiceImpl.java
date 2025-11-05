@@ -180,7 +180,7 @@ public class CartItemServiceImpl implements CartItemService {
                     cartItemDTO.setQuantity(cartItem.getQuantity());
                     cartItemDTO.setProductVariantDTO(productVariantDTO);
                     cartItemDTO.setQuantity(cartItem.getQuantity());
-
+                    cartItemDTO.setProductId(pv.getProductId());
                     cartItemDTOs.add(cartItemDTO);
                 }
             });

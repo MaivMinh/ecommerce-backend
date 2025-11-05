@@ -17,4 +17,5 @@ public class CartItemDTO {
     private ProductVariantDTO productVariantDTO;
     @NotNull(message = "Product ID cannot be empty")
     private Integer quantity;
+    private String productId;
 }

@@ -50,6 +50,7 @@ public class OrderCommandController {
                 .orderItemDtos(request.getOrderItemDtos())
                 .promotionId(request.getPromotionId())
                 .orderItemDtos(request.getOrderItemDtos())
+                .productId(request.getProductId())
                 .build();
 
         try (SubscriptionQueryResult<ResponseData, ResponseData> queryResult = queryGateway.subscriptionQuery(new FindOverallOrderStatusQuery(command.getOrderId()), ResponseData.class, ResponseData.class);) {

@@ -46,4 +46,9 @@ public class ProductQueryHandler {
     public ResponseData handle(SearchProductByKeywordQuery query) {
         return productService.searchProductByKeyword(query);
     }
+
+    @QueryHandler
+    public ResponseData handle(FindProductByProductVariantIdQuery query) {
+        return productService.findProductByProductVariantId(query);
+    }
 }
