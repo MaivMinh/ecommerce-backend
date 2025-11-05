@@ -1,15 +1,21 @@
 package com.minh.order_service.service.impl;
 
 import com.minh.common.DTOs.OrderItemCreateDto;
+import com.minh.common.constants.AppConstants;
 import com.minh.common.constants.ErrorCode;
 import com.minh.common.constants.ResponseMessages;
 import com.minh.common.events.CreatedOrderConfirmedEvent;
+import com.minh.common.functions.input.NotifyOrderConfirmedParams;
 import com.minh.common.events.OrderCreatedEvent;
 import com.minh.common.events.OrderCreatedRollbackedEvent;
+import com.minh.common.functions.input.NotifyOrderConfirmedEvent;
+import com.minh.common.functions.input.OrderCreatedEventInput;
+import com.minh.common.functions.input.OrderedItem;
 import com.minh.common.message.MessageCommon;
 import com.minh.common.response.ResponseData;
 import com.minh.common.utils.AppUtils;
 import com.minh.order_service.DTOs.OrderDto;
+import com.minh.order_service.enums.NotifyTemplateCode;
 import com.minh.order_service.enums.OrderStatus;
 import com.minh.order_service.enums.PaymentStatus;
 import com.minh.order_service.grpc.client.PaymentGrpcClient;
@@ -31,6 +37,7 @@ import com.minh.order_service.service.OrderService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -46,6 +53,7 @@ import product_service.ProductVariantRes;
 import support_service.GetShippingAddressRequest;
 import support_service.GetShippingAddressResponse;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Slf4j
@@ -59,6 +67,7 @@ public class OrderServiceImpl implements OrderService {
     private final ProductGrpcClient productGrpcClient;
     private final SupportGrpcClient supportGrpcClient;
     private final PaymentGrpcClient paymentGrpcClient;
+    private final StreamBridge streamBridge;
 
 
     @Override
@@ -102,6 +111,51 @@ public class OrderServiceImpl implements OrderService {
 
         saved.setStatus(OrderStatus.CONFIRMED);
         orderRepository.save(saved);
+
+        /// Gửi 1 event sang cho support service để service này cho phép review đơn hàng này.
+        var result = streamBridge.send("publishOrderCreated-out-0", OrderCreatedEventInput.builder()
+                .productId(event.getProductId())
+                .username(event.getUsername())
+                .build());
+        if (result) {
+            log.info("Gửi sự kiện tới Kafka server thành công cho đơn hàng: {}", event.getOrderId());
+        } else log.warn("Có lỗi xảy ra khi gửi sự kiện tới Kafka server");
+
+        /// Tính tổng đơn hàng.
+        List<OrderItem> orderItems = orderItemService.getAllByOrderId(event.getOrderId());
+
+        List<OrderedItem> items = new ArrayList<>();
+        for (OrderItem item : orderItems) {
+            items.add(OrderedItem.builder()
+                    .id(item.getId())
+                    .productVariantId(item.getProductVariantId())
+                    .quantity(item.getQuantity())
+                    .price(item.getPrice())
+                    .build());
+        }
+
+
+        /// Gửi event thông báo xác nhận đơn hàng.
+        result = streamBridge.send("publishNotifyOrderConfirmed-out-0", NotifyOrderConfirmedEvent.builder()
+                .templateCode(NotifyTemplateCode.ORDER_CONFIRMATION.name())
+                .recipient(Map.of("username", event.getUsername()))
+                .params(NotifyOrderConfirmedParams.builder()
+                        .orderId(event.getOrderId())
+                        .items(items)
+                        .build()
+                )
+                .metaData(Map.of(
+                        "createdAt", System.currentTimeMillis(),
+                        "redirectUrl", AppConstants.FRONTEND_URL + "/orders/"
+                ))
+                .build());
+
+        if (result) {
+            log.info("Gửi thông báo xác nhận đơn hàng thành công tới Email cho username: {}", event.getUsername());
+        } else {
+            log.warn("Có lỗi xảy ra khi gửi thông báo xác nhận đơn hàng tới Email cho username: {}", event.getUsername());
+        }
+
     }
 
     public ResponseData findOverallStatusOfCreatingOrder(FindOverallStatusOfCreatingOrderQuery query) {

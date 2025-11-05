@@ -23,20 +23,25 @@ public class PaymentProcessingServiceImpl implements PaymentProcessingService {
 
     @Override
     public void processPayment(PaymentProcessedEvent event) {
-        PaymentMethodDto method = paymentMethodService.findById(event.getPaymentMethodId());
-        if (method == null) {
-            throw new RuntimeException(messageCommon.getMessage(ErrorCode.PaymentMethod.NOT_FOUND, event.getPaymentMethodId()));
-        }
+        try {
+            PaymentMethodDto method = paymentMethodService.findById(event.getPaymentMethodId());
+            if (method == null) {
+                throw new RuntimeException(messageCommon.getMessage(ErrorCode.PaymentMethod.NOT_FOUND, event.getPaymentMethodId()));
+            }
 
-        Payment payment = new Payment();
-        payment.setId(event.getPaymentId());
-        payment.setOrderId(event.getOrderId());
-        payment.setTotal(event.getTotal());
-        payment.setPaymentMethodId(event.getPaymentMethodId());
-        payment.setStatus(PaymentStatus.COMPLETED);
-        payment.setCurrency(event.getCurrency());
-        payment.setTransactionId(AppUtils.generateUUIDv7());
-        paymentRepository.save(payment);
+            Payment payment = new Payment();
+            payment.setId(event.getPaymentId());
+            payment.setOrderId(event.getOrderId());
+            payment.setTotal(event.getTotal());
+            payment.setPaymentMethodId(event.getPaymentMethodId());
+            payment.setStatus(PaymentStatus.COMPLETED);
+            payment.setCurrency(event.getCurrency());
+            payment.setTransactionId(AppUtils.generateUUIDv7());
+            paymentRepository.save(payment);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(messageCommon.getMessage(ErrorCode.Payment.PAYMENT_FAILED, event.getPaymentId()));
+        }
     }
 
     @Override

@@ -31,4 +31,11 @@ public class ProductServiceGrpcServer extends ProductServiceGrpc.ProductServiceI
         responseObserver.onNext(response);
         responseObserver.onCompleted();
     }
+
+    @Override
+    public void findProductInfoByProductVariantId(FindProductInfoByProductVariantIdRequest request, StreamObserver<FindProductInfoByProductVariantIdResponse> responseObserver) {
+        FindProductInfoByProductVariantIdResponse response = productService.findProductInfoByProductVariantId(request);
+        responseObserver.onNext(response);
+        responseObserver.onCompleted();
+    }
 }

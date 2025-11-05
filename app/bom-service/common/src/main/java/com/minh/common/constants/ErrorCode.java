@@ -3,6 +3,7 @@ package com.minh.common.constants;
 public class ErrorCode {
     public static final String INTERNAL_SERVER_ERROR = "internal.server.error";
     public static final String INVALID_PARAMS = "invalid.params";
+    public static final String INVALID_REQUEST = "invalid.request";
     public static final String QUERY_EXECUTION_ERROR = "query.execution.error";
     public static final String FORBIDDEN = "forbidden";
 
@@ -67,5 +68,14 @@ public class ErrorCode {
 
     public static class OrderPromotion {
         public static final String NOT_FOUND = "order.promotion.not.found";
+    }
+
+    public static class Review {
+        public static final String NOT_FOUND = "review.not.found";
+    }
+
+    public static class NOTIFICATION_TEMPLATE {
+        public static final String TEMPLATE_CODE_EXISTED = "notification.template.template.code.existed";
+        public static final String NOT_FOUND = "notification.template.not.found";
     }
 }

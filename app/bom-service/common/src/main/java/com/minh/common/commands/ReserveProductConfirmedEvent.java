@@ -12,5 +12,7 @@ public class ReserveProductConfirmedEvent {
     private String orderPromotionId;
     private String orderId;
     private String paymentId;
+    private String username;
+    private String productId;
     private String errorMsg;
 }

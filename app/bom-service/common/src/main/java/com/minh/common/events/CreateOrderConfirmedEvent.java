@@ -12,4 +12,6 @@ public class CreateOrderConfirmedEvent {
     private String paymentId;
     private String reserveProductId;
     private String orderPromotionId;
+    private String username;
+    private String productId;
 }

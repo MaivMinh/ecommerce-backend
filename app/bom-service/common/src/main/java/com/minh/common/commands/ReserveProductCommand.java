@@ -20,4 +20,6 @@ public class ReserveProductCommand {
     private List<ReserveProductItem> reserveProductItems;
     private Double total;
     private String currency;
+    private String username;
+    private String productId;
 }

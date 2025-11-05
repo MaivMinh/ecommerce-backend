@@ -2,9 +2,12 @@ package com.minh.order_service.command.aggregate;
 
 import com.minh.common.commands.ConfirmCreateOrderCommand;
 import com.minh.common.commands.RollbackCreateOrderCommand;
+import com.minh.common.constants.AppConstants;
 import com.minh.common.events.OrderCreatedEvent;
 import com.minh.common.events.OrderCreatedRollbackedEvent;
 import com.minh.common.events.CreatedOrderConfirmedEvent;
+import com.minh.common.functions.input.NotifyOrderConfirmedEvent;
+import com.minh.common.functions.input.OrderCreatedEventInput;
 import com.minh.order_service.command.commands.CreateOrderCommand;
 import lombok.extern.slf4j.Slf4j;
 import org.axonframework.commandhandling.CommandHandler;
@@ -14,7 +17,12 @@ import org.axonframework.modelling.command.AggregateIdentifier;
 import org.axonframework.modelling.command.AggregateLifecycle;
 import org.axonframework.spring.stereotype.Aggregate;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Aggregate
@@ -32,9 +40,17 @@ public class OrderAggregate {
     private String paymentMethodId;
     private String promotionId;
     private String errMsg;
+    private StreamBridge streamBridge;
+    private String productId;
 
     public OrderAggregate() {
     }
+
+    @Autowired
+    public void setStreamBridge(StreamBridge streamBridge) {
+        this.streamBridge = streamBridge;
+    }
+
 
     @CommandHandler
     public OrderAggregate(CreateOrderCommand command) {
@@ -43,6 +59,7 @@ public class OrderAggregate {
         BeanUtils.copyProperties(command, event);
         AggregateLifecycle.apply(event);
     }
+
     @EventSourcingHandler
     public void on(OrderCreatedEvent event) {
         this.orderId = event.getOrderId();
@@ -64,6 +81,7 @@ public class OrderAggregate {
         BeanUtils.copyProperties(command, event);
         AggregateLifecycle.apply(event);
     }
+
     @EventSourcingHandler
     public void on(OrderCreatedRollbackedEvent event) {
         this.errMsg = event.getErrorMsg();
@@ -76,6 +94,7 @@ public class OrderAggregate {
         BeanUtils.copyProperties(command, event);
         AggregateLifecycle.apply(event);
     }
+
     @EventSourcingHandler
     public void on(CreatedOrderConfirmedEvent event) {
     }

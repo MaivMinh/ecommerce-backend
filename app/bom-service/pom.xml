@@ -46,6 +46,7 @@
         <module>../api-gateway</module>
         <module>./common</module>
         <module>../support-service</module>
+        <module>../notify-service</module>
     </modules>
     <dependencies>
     </dependencies>

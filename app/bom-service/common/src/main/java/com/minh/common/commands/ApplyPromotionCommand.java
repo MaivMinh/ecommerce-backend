@@ -17,4 +17,6 @@ public class ApplyPromotionCommand {
     private String paymentMethodId;
     private Double total;
     private String currency;
+    private String username;
+    private String productId;
 }

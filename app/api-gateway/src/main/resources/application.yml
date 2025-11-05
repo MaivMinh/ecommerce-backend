@@ -33,13 +33,14 @@ spring:
         - id: support-service
           uri: lb://support-service
           predicates:
-            - Path=/api/carts/**,/api/carts
+            - Path=/api/carts/**,/api/carts,/api/files/**,/api/files,/api/reviews/**,/api/reviews,/api/users/**,/api/addresses/**,/api/users,/api/addresses
             - Method=GET,POST,PUT,DELETE,PATCH
           filters:
             - name: CircuitBreaker
               args:
                 name: cartService
-                fallbackUri: "forward:/carts/contact-support"
+                fallbackUri: "forward:/support/contact-support"
+
         - id: order-service
           uri: lb://order-service
           predicates:
@@ -73,38 +74,17 @@ spring:
                 name: promotionService
                 fallbackUri: "forward:/promotions/contact-support"
 
-        - id: support-service
-          uri: lb://support-service
+        - id: notify-service
+          uri: lb://notify-service
           predicates:
-            - Path=/api/files/**,/api/files
+            - Path=/api/templates/**,/api/templates,/api/send-logs,/api/send-logs/**
             - Method=GET,POST,PUT,DELETE,PATCH
           filters:
             - name: CircuitBreaker
               args:
-                name: fileService
-                fallbackUri: "forward:/files/contact-support"
+                name: promotionService
+                fallbackUri: "forward:/notify/contact-support"
 
-        - id: support-service
-          uri: lb://support-service
-          predicates:
-            - Path=/api/reviews/**,/api/reviews
-            - Method=GET,POST,PUT,DELETE,PATCH
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: reviewService
-                fallbackUri: "forward:/reviews/contact-support"
-
-        - id: support-service
-          uri: lb://support-service
-          predicates:
-            - Path=/api/users/**,/api/addresses/**,/api/users,/api/addresses
-            - Method=GET,POST,PUT,DELETE,PATCH
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: addressService
-                fallbackUri: "forward:/address/contact-support"
       httpclient:
         connect-timeout: 10000
         response-timeout: 20s

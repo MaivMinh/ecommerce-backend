@@ -50,6 +50,7 @@ message ProductVariant {
   double price = 8;
   double originalPrice = 9;
   string cartItemId = 10;
+  string productId = 11;
 }
 message FindProductVariantByIdRequest {
   string id = 1;

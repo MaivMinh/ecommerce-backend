@@ -15,5 +15,7 @@ public class PromotionAppliedEvent {
     private String paymentMethodId;
     private Double total;
     private String currency;
+    private String username;
+    private String productId;
     private String errorMsg;
 }

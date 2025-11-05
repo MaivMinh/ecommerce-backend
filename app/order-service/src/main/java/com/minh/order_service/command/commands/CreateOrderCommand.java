@@ -24,4 +24,5 @@ public class CreateOrderCommand {
     private String currency;
     private String note;
     private List<OrderItemCreateDto> orderItemDtos;
+    private String productId;
 }
